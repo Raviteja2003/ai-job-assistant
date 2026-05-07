@@ -29,17 +29,24 @@ async def upload_resume(
         raw_text = extract_text(file_bytes, file.filename)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-    except Exception:
+    except Exception as e:
+        print(f"[resume/upload] Text extraction FAILED: {type(e).__name__}: {e}")
         raise HTTPException(status_code=422, detail="Could not extract text from file")
 
     if not raw_text:
         raise HTTPException(status_code=422, detail="No text found in file")
 
+    print(f"[resume/upload] Extracted {len(raw_text)} characters from {file.filename}")
+
     # Parse with Claude AI
     try:
         parsed = parse_resume_with_ai(raw_text)
-    except Exception:
-        # If AI parsing fails, store with empty fields — don't fail the upload
+        print(f"[resume/upload] AI parsing succeeded — skills: {len(parsed.get('skills', []))}, "
+              f"experience: {len(parsed.get('experience', []))}, "
+              f"projects: {len(parsed.get('projects', []))}")
+    except Exception as e:
+        # Log the real error — never silently fail during development
+        print(f"[resume/upload] AI parsing FAILED: {type(e).__name__}: {e}")
         parsed = {"skills": [], "experience": [], "projects": []}
 
     # Save to DB
@@ -57,6 +64,7 @@ async def upload_resume(
 
     return resume
 
+
 @router.get("/", response_model=list[ResumeListItem])
 def get_resumes(
     db: Session = Depends(get_db),
@@ -64,6 +72,7 @@ def get_resumes(
 ):
     resumes = db.query(Resume).filter(Resume.user_id == current_user.id).all()
     return resumes
+
 
 @router.get("/{resume_id}", response_model=ResumeUploadResponse)
 def get_resume(

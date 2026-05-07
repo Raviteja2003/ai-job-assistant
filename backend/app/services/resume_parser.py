@@ -1,9 +1,11 @@
 import io
 import json
+import re
 import pdfplumber
 import docx
-import anthropic
+from google import genai
 from app.config import settings
+
 
 def extract_text_from_pdf(file_bytes: bytes) -> str:
     text = ""
@@ -14,10 +16,12 @@ def extract_text_from_pdf(file_bytes: bytes) -> str:
                 text += page_text + "\n"
     return text.strip()
 
+
 def extract_text_from_docx(file_bytes: bytes) -> str:
     doc = docx.Document(io.BytesIO(file_bytes))
     text = "\n".join([para.text for para in doc.paragraphs if para.text.strip()])
     return text.strip()
+
 
 def extract_text(file_bytes: bytes, filename: str) -> str:
     ext = filename.lower().split(".")[-1]
@@ -28,14 +32,15 @@ def extract_text(file_bytes: bytes, filename: str) -> str:
     else:
         raise ValueError(f"Unsupported file type: {ext}")
 
+
 def parse_resume_with_ai(raw_text: str) -> dict:
-    client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
+    client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
     prompt = f"""You are a resume parser. Extract structured information from the resume below.
 
 Return ONLY a valid JSON object with exactly this structure, no extra text:
 {{
-  "skills": ["skill1", "skill2", ...],
+  "skills": ["skill1", "skill2"],
   "experience": [
     {{
       "title": "Job Title",
@@ -56,18 +61,23 @@ Return ONLY a valid JSON object with exactly this structure, no extra text:
 Resume text:
 {raw_text}"""
 
-    message = client.messages.create(
-        model="claude-opus-4-6",
-        max_tokens=2000,
-        messages=[{"role": "user", "content": prompt}]
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt
     )
 
-    response_text = message.content[0].text.strip()
+    response_text = response.text.strip()
 
-    # Strip markdown code blocks if Claude wraps in ```json
-    if response_text.startswith("```"):
-        response_text = response_text.split("```")[1]
-        if response_text.startswith("json"):
-            response_text = response_text[4:]
-    
-    return json.loads(response_text)
+    # Strip markdown fences
+    response_text = re.sub(r"^```(?:json)?\s*", "", response_text)
+    response_text = re.sub(r"\s*```$", "", response_text)
+    response_text = response_text.strip()
+
+    print(f"[resume_parser] Gemini raw response:\n{response_text[:500]}")
+
+    try:
+        return json.loads(response_text)
+    except json.JSONDecodeError as e:
+        print(f"[resume_parser] JSON parse error: {e}")
+        print(f"[resume_parser] Full response:\n{response_text}")
+        raise ValueError(f"Gemini returned invalid JSON: {e}")

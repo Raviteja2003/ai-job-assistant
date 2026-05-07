@@ -23,7 +23,7 @@ services:
     environment:
       DATABASE_URL: postgresql://jobuser:jobpassword@db:5432/jobassistant
       SECRET_KEY: your-secret-key-change-this
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
     ports:
       - "8000:8000"
     volumes:
