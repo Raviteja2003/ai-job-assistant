@@ -4,6 +4,8 @@ from app.db import engine, Base
 from app.api import auth, resume
 from app.models import user, resume as resume_model  # noqa
 from app.api.job import router as job_router
+from app.api import tailor
+
 app = FastAPI(title="AI Job Assistant API", version="1.0.0")
 
 app.add_middleware(
@@ -21,6 +23,7 @@ def create_tables():
 app.include_router(auth.router)
 app.include_router(resume.router)
 app.include_router(job_router)
+app.include_router(tailor.router, prefix="/tailor", tags=["tailor"])
 
 @app.get("/health")
 def health():
