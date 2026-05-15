@@ -1,231 +1,316 @@
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { type TailorResult } from "../types";
 
+// ─── Icons ────────────────────────────────────────────────────────────────────
+const ArrowLeftIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+    <path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const CopyIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+    <rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.3"/>
+    <path d="M2 10V2.5A.5.5 0 012.5 2H10" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+  </svg>
+);
+
+const CheckSmallIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+    <path d="M2.5 7L5.5 10L11.5 4" stroke="#16A34A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+// ─── Copy button with feedback ─────────────────────────────────────────────────
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+  return (
+    <button
+      onClick={handleCopy}
+      style={{
+        display: "flex", alignItems: "center", gap: 5,
+        padding: "5px 10px",
+        background: copied ? "#F0FDF4" : "#F3F4F6",
+        border: `1px solid ${copied ? "#BBF7D0" : "#E5E7EB"}`,
+        borderRadius: 6,
+        fontSize: 12, fontWeight: 500,
+        color: copied ? "#16A34A" : "#6B7280",
+        cursor: "pointer",
+        fontFamily: "'DM Sans', sans-serif",
+        transition: "all 0.2s",
+        flexShrink: 0,
+      }}
+    >
+      {copied ? <CheckSmallIcon /> : <CopyIcon />}
+      {copied ? "Copied" : "Copy"}
+    </button>
+  );
+}
+
+// ─── Score ring ────────────────────────────────────────────────────────────────
+function ScoreRing({ score }: { score: number }) {
+  const radius = 54;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (score / 100) * circumference;
+
+  const color = score >= 75 ? "#16A34A" : score >= 50 ? "#D97706" : "#DC2626";
+  const bg    = score >= 75 ? "#F0FDF4"  : score >= 50 ? "#FFFBEB"  : "#FEF2F2";
+  const label = score >= 75 ? "Strong Match" : score >= 50 ? "Moderate Match" : "Weak Match";
+
+  return (
+    <div style={{
+      background: bg,
+      border: `1.5px solid ${color}22`,
+      borderRadius: 16,
+      padding: "28px 24px",
+      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+      gap: 4,
+    }}>
+      <svg width="136" height="136" viewBox="0 0 136 136" style={{ overflow: "visible" }}>
+        {/* Track */}
+        <circle cx="68" cy="68" r={radius} fill="none" stroke={`${color}22`} strokeWidth="8" />
+        {/* Fill */}
+        <circle
+          cx="68" cy="68" r={radius}
+          fill="none"
+          stroke={color}
+          strokeWidth="8"
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          transform="rotate(-90 68 68)"
+          style={{ transition: "stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1)" }}
+        />
+        {/* Score text */}
+        <text x="68" y="62" textAnchor="middle" fontSize="28" fontWeight="700" fill={color} fontFamily="'DM Sans', sans-serif">{score}</text>
+        <text x="68" y="80" textAnchor="middle" fontSize="11" fill={color} fontFamily="'DM Sans', sans-serif" opacity="0.7">/ 100</text>
+      </svg>
+      <p style={{ fontSize: 13, fontWeight: 600, color, marginTop: 4 }}>{label}</p>
+      <p style={{ fontSize: 11, color: "#9CA3AF" }}>Match Score</p>
+    </div>
+  );
+}
+
+// ─── Main Results ──────────────────────────────────────────────────────────────
 export default function Results() {
   const location = useLocation();
   const navigate = useNavigate();
-  const result: TailorResult | undefined = location.state?.result;
 
-  if (!result) {
-    navigate("/dashboard");
-    return null;
+  // ✅ Fix: read state once on mount, don't navigate inline during render
+  const [result, setResult] = useState<TailorResult | undefined>(undefined);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const state = location.state?.result as TailorResult | undefined;
+    if (!state) {
+      navigate("/dashboard", { replace: true });
+    } else {
+      setResult(state);
+      setReady(true);
+    }
+  }, []);
+
+  if (!ready || !result) {
+    return (
+      <div style={{ minHeight: "100vh", background: "#F8F9FA", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ width: 20, height: 20, border: "2px solid #E5E7EB", borderTopColor: "#2563EB", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
   }
 
   const score = result.match_score;
 
-  // Score color thresholds
-  const scoreColor =
-    score >= 75 ? "#4ade80" : score >= 50 ? "#c9a84c" : "#f87171";
-  const scoreLabel =
-    score >= 75 ? "Strong Match" : score >= 50 ? "Moderate Match" : "Weak Match";
-
-  // Arc path for score ring
-  const radius = 52;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (score / 100) * circumference;
-
   return (
-    <div className="min-h-screen bg-[#0d0f14] text-[#e8e4dc] font-['DM_Sans',sans-serif]">
+    <div style={{ minHeight: "100vh", background: "#F8F9FA", fontFamily: "'DM Sans', sans-serif" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=Playfair+Display:wght@400;600&family=DM+Mono:wght@400;500&display=swap');
-        * { box-sizing: border-box; }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: #0d0f14; }
-        ::-webkit-scrollbar-thumb { background: #2a2d35; border-radius: 2px; }
-        .section-label {
-          font-family: 'DM Mono', monospace;
-          font-size: 0.65rem;
-          letter-spacing: 0.2em;
-          text-transform: uppercase;
-          color: #c9a84c;
-        }
-        .card {
-          background: #13151c;
-          border: 1px solid #1e2028;
-          border-radius: 4px;
-        }
-        .skill-tag {
-          font-family: 'DM Mono', monospace;
-          font-size: 0.65rem;
-          padding: 3px 10px;
-          border-radius: 2px;
-        }
-        .skill-matched {
-          background: #0f2a1a;
-          color: #4ade80;
-          border: 1px solid #166534;
-        }
-        .skill-missing {
-          background: #2a0f0f;
-          color: #f87171;
-          border: 1px solid #7f1d1d;
-        }
-        .bullet-card {
-          border-left: 2px solid #1e2028;
-          transition: border-color 0.2s ease;
-        }
-        .bullet-card:hover {
-          border-left-color: #c9a84c;
-        }
-        .ring-track {
-          stroke: #1e2028;
-          fill: none;
-          stroke-width: 6;
-        }
-        .ring-fill {
-          fill: none;
-          stroke-width: 6;
-          stroke-linecap: round;
-          transform: rotate(-90deg);
-          transform-origin: 50% 50%;
-          transition: stroke-dashoffset 1s ease;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@400;600&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(12px); }
-          to { opacity: 1; transform: translateY(0); }
+          to   { opacity: 1; transform: translateY(0); }
         }
-        .fade-up { animation: fadeUp 0.4s ease forwards; }
-        .fade-up-1 { animation-delay: 0.05s; opacity: 0; }
-        .fade-up-2 { animation-delay: 0.15s; opacity: 0; }
-        .fade-up-3 { animation-delay: 0.25s; opacity: 0; }
-        .fade-up-4 { animation-delay: 0.35s; opacity: 0; }
+        .fade-1 { animation: fadeUp 0.35s ease 0.05s both; }
+        .fade-2 { animation: fadeUp 0.35s ease 0.15s both; }
+        .fade-3 { animation: fadeUp 0.35s ease 0.25s both; }
+        .fade-4 { animation: fadeUp 0.35s ease 0.35s both; }
+        .white-card {
+          background: #fff;
+          border: 1.5px solid #E5E7EB;
+          border-radius: 12px;
+        }
+        .skill-chip {
+          display: inline-flex;
+          align-items: center;
+          padding: 4px 10px;
+          border-radius: 6px;
+          font-size: 12px;
+          font-weight: 500;
+        }
+        .chip-green { background: #F0FDF4; color: #16A34A; border: 1px solid #BBF7D0; }
+        .chip-red   { background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA; }
+        .bullet-card {
+          background: #fff;
+          border: 1.5px solid #E5E7EB;
+          border-radius: 12px;
+          padding: 20px 20px;
+          border-left: 4px solid #E5E7EB;
+          transition: border-left-color 0.2s;
+        }
+        .bullet-card:hover { border-left-color: #2563EB; }
+        .nav-btn {
+          display: flex; align-items: center; gap: 6px;
+          background: none; border: none; cursor: pointer;
+          font-size: 13px; font-weight: 500;
+          color: #6B7280; font-family: 'DM Sans', sans-serif;
+          padding: 6px 10px; border-radius: 6px;
+          transition: background 0.15s, color 0.15s;
+        }
+        .nav-btn:hover { background: #F3F4F6; color: #111827; }
+        .section-label {
+          font-size: 11px;
+          font-weight: 600;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          color: #9CA3AF;
+          margin-bottom: 12px;
+        }
       `}</style>
 
-      {/* Nav */}
-      <nav className="border-b border-[#1e2028] px-8 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-6 h-6 border border-[#c9a84c] flex items-center justify-center">
-            <div className="w-2 h-2 bg-[#c9a84c]" />
+      {/* ── Nav ── */}
+      <nav style={{
+        background: "#fff", borderBottom: "1px solid #E5E7EB",
+        padding: "0 32px", height: 56,
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        position: "sticky", top: 0, zIndex: 40,
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 30, height: 30, background: "#2563EB", borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M2.5 13L8 3.5L13.5 13H2.5Z" fill="white" fillOpacity="0.9"/>
+            </svg>
           </div>
-          <span style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", fontWeight: 600 }}>
-            JobAssist
-          </span>
+          <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 17, fontWeight: 600, color: "#111827" }}>JobAssist</span>
         </div>
-        <button
-          onClick={() => navigate("/dashboard")}
-          className="text-[#4a4d55] hover:text-[#e8e4dc] transition-colors"
-          style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.7rem", letterSpacing: "0.15em", textTransform: "uppercase" }}
-        >
-          ← Back
+        <button className="nav-btn" onClick={() => navigate("/dashboard")}>
+          <ArrowLeftIcon /> Back to Dashboard
         </button>
       </nav>
 
-      <main className="max-w-4xl mx-auto px-8 py-12">
-        {/* Header */}
-        <div className="mb-10 fade-up fade-up-1">
-          <p className="section-label mb-3">Analysis Results</p>
-          <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.8rem", fontWeight: 400, color: "#e8e4dc" }}>
+      <main style={{ maxWidth: 860, margin: "0 auto", padding: "36px 24px 80px" }}>
+
+        {/* ── Page header ── */}
+        <div className="fade-1" style={{ marginBottom: 28 }}>
+          <p style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#2563EB", marginBottom: 6 }}>
+            Analysis Results
+          </p>
+          <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 26, fontWeight: 600, color: "#111827" }}>
             Here's how you stack up.
           </h1>
         </div>
 
-        {/* Top row: score + summary */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 fade-up fade-up-2">
-          {/* Score ring */}
-          <div className="card px-6 py-8 flex flex-col items-center justify-center">
-            <svg width="130" height="130" viewBox="0 0 130 130">
-              <circle className="ring-track" cx="65" cy="65" r={radius} />
-              <circle
-                className="ring-fill"
-                cx="65"
-                cy="65"
-                r={radius}
-                stroke={scoreColor}
-                strokeDasharray={circumference}
-                strokeDashoffset={offset}
-              />
-            </svg>
-            <div className="text-center -mt-2">
-              <p style={{ fontFamily: "'DM Mono', monospace", fontSize: "2rem", fontWeight: 500, color: scoreColor, lineHeight: 1 }}>
-                {score}
-              </p>
-              <p style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.6rem", letterSpacing: "0.15em", color: "#4a4d55", marginTop: "4px" }}>
-                MATCH SCORE
-              </p>
-              <p className="text-xs mt-2" style={{ color: scoreColor }}>{scoreLabel}</p>
-            </div>
-          </div>
+        {/* ── Score + Summary ── */}
+        <div className="fade-2" style={{ display: "grid", gridTemplateColumns: "200px 1fr", gap: 20, marginBottom: 20 }}>
+          <ScoreRing score={score} />
 
-          {/* Summary */}
-          <div className="card px-6 py-6 md:col-span-2 flex flex-col justify-center">
-            <p className="section-label mb-3">Summary</p>
-            <p className="text-[#b8b4ac] text-sm leading-relaxed">{result.summary}</p>
+          <div className="white-card" style={{ padding: "24px 24px" }}>
+            <p className="section-label">AI Summary</p>
+            <p style={{ fontSize: 14, color: "#374151", lineHeight: 1.7 }}>{result.summary}</p>
           </div>
         </div>
 
-        {/* Skills */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 fade-up fade-up-3">
+        {/* ── Skills ── */}
+        <div className="fade-3" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 20 }}>
+
           {/* Matched */}
-          <div className="card px-6 py-5">
-            <div className="flex items-center justify-between mb-4">
-              <p className="section-label">Matched Skills</p>
-              <span style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.7rem", color: "#4ade80" }}>
+          <div className="white-card" style={{ padding: "20px 20px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+              <p className="section-label" style={{ margin: 0 }}>✅ Matched Skills</p>
+              <span style={{ fontSize: 12, fontWeight: 700, color: "#16A34A", background: "#F0FDF4", padding: "2px 8px", borderRadius: 20 }}>
                 {result.matched_skills.length}
               </span>
             </div>
             {result.matched_skills.length === 0 ? (
-              <p className="text-[#4a4d55] text-xs">No skills matched.</p>
+              <p style={{ fontSize: 13, color: "#9CA3AF" }}>No skills matched.</p>
             ) : (
-              <div className="flex flex-wrap gap-2">
-                {result.matched_skills.map((s) => (
-                  <span key={s} className="skill-tag skill-matched">{s}</span>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {result.matched_skills.map(s => (
+                  <span key={s} className="skill-chip chip-green">{s}</span>
                 ))}
               </div>
             )}
           </div>
 
           {/* Missing */}
-          <div className="card px-6 py-5">
-            <div className="flex items-center justify-between mb-4">
-              <p className="section-label">Missing Skills</p>
-              <span style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.7rem", color: "#f87171" }}>
+          <div className="white-card" style={{ padding: "20px 20px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+              <p className="section-label" style={{ margin: 0 }}>❌ Missing Skills</p>
+              <span style={{ fontSize: 12, fontWeight: 700, color: "#DC2626", background: "#FEF2F2", padding: "2px 8px", borderRadius: 20 }}>
                 {result.missing_skills.length}
               </span>
             </div>
             {result.missing_skills.length === 0 ? (
-              <p className="text-[#4a4d55] text-xs">No gaps found.</p>
+              <p style={{ fontSize: 13, color: "#9CA3AF" }}>No gaps found — great match!</p>
             ) : (
-              <div className="flex flex-wrap gap-2">
-                {result.missing_skills.map((s) => (
-                  <span key={s} className="skill-tag skill-missing">{s}</span>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {result.missing_skills.map(s => (
+                  <span key={s} className="skill-chip chip-red">{s}</span>
                 ))}
               </div>
             )}
           </div>
         </div>
 
-        {/* Improved bullets */}
-        <div className="fade-up fade-up-4">
-          <div className="flex items-center justify-between mb-4">
-            <p className="section-label">Improved Bullet Points</p>
-            <span style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.7rem", color: "#4a4d55" }}>
-              {result.improved_bullets.length} suggestions
+        {/* ── Improved Bullets ── */}
+        <div className="fade-4">
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+            <div>
+              <p className="section-label" style={{ margin: 0 }}>Improved Bullet Points</p>
+            </div>
+            <span style={{ fontSize: 12, color: "#9CA3AF" }}>
+              {result.improved_bullets.length} suggestion{result.improved_bullets.length !== 1 ? "s" : ""}
             </span>
           </div>
 
           {result.improved_bullets.length === 0 ? (
-            <div className="card px-6 py-8 text-center">
-              <p className="text-[#4a4d55] text-sm">No bullet improvements suggested.</p>
+            <div className="white-card" style={{ padding: "32px 24px", textAlign: "center" }}>
+              <p style={{ fontSize: 14, color: "#9CA3AF" }}>No bullet improvements suggested.</p>
             </div>
           ) : (
-            <div className="flex flex-col gap-4">
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               {result.improved_bullets.map((bullet, i) => (
-                <div key={i} className="card px-6 py-5 bullet-card">
-                  <div className="mb-3">
-                    <p style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.6rem", letterSpacing: "0.15em", color: "#4a4d55", marginBottom: "6px" }}>
-                      ORIGINAL
+                <div key={i} className="bullet-card">
+                  {/* Original */}
+                  <div style={{ marginBottom: 14 }}>
+                    <p style={{ fontSize: 11, fontWeight: 600, color: "#9CA3AF", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>
+                      Original
                     </p>
-                    <p className="text-[#6a6d75] text-sm leading-relaxed line-through decoration-[#3a3d45]">
+                    <p style={{ fontSize: 13, color: "#9CA3AF", lineHeight: 1.6, textDecoration: "line-through", textDecorationColor: "#D1D5DB" }}>
                       {bullet.original}
                     </p>
                   </div>
-                  <div className="border-t border-[#1e2028] pt-3">
-                    <p style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.6rem", letterSpacing: "0.15em", color: "#c9a84c", marginBottom: "6px" }}>
-                      IMPROVED
-                    </p>
-                    <p className="text-[#e8e4dc] text-sm leading-relaxed">
-                      {bullet.improved}
-                    </p>
+
+                  {/* Divider */}
+                  <div style={{ height: 1, background: "#F3F4F6", marginBottom: 14 }} />
+
+                  {/* Improved */}
+                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ fontSize: 11, fontWeight: 600, color: "#2563EB", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>
+                        Improved
+                      </p>
+                      <p style={{ fontSize: 13, color: "#111827", lineHeight: 1.7, fontWeight: 500 }}>
+                        {bullet.improved}
+                      </p>
+                    </div>
+                    <CopyButton text={bullet.improved} />
                   </div>
                 </div>
               ))}
@@ -233,14 +318,28 @@ export default function Results() {
           )}
         </div>
 
-        {/* Run again */}
-        <div className="mt-10 flex justify-center">
+        {/* ── Bottom CTA ── */}
+        <div style={{ marginTop: 40, display: "flex", justifyContent: "center" }}>
           <button
             onClick={() => navigate("/dashboard")}
-            className="text-[#4a4d55] hover:text-[#c9a84c] transition-colors"
-            style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.7rem", letterSpacing: "0.15em", textTransform: "uppercase" }}
+            style={{
+              display: "flex", alignItems: "center", gap: 8,
+              padding: "12px 28px",
+              background: "#fff", border: "1.5px solid #E5E7EB",
+              borderRadius: 10, fontSize: 14, fontWeight: 500,
+              color: "#374151", cursor: "pointer", fontFamily: "'DM Sans', sans-serif",
+              transition: "all 0.2s",
+            }}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "#2563EB";
+              (e.currentTarget as HTMLButtonElement).style.color = "#2563EB";
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "#E5E7EB";
+              (e.currentTarget as HTMLButtonElement).style.color = "#374151";
+            }}
           >
-            ← Analyze another combination
+            <ArrowLeftIcon /> Analyze another combination
           </button>
         </div>
       </main>
