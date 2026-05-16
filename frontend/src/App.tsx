@@ -3,7 +3,10 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Results from "./pages/Results";
+import CoverLetter from "./pages/CoverLetter";
+import Tracker from "./pages/Tracker";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AppLayout from "./components/AppLayout";
 
 export default function App() {
   return (
@@ -15,7 +18,9 @@ export default function App() {
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <Dashboard />
+              <AppLayout>
+                <Dashboard />
+              </AppLayout>
             </ProtectedRoute>
           }
         />
@@ -23,7 +28,29 @@ export default function App() {
           path="/results"
           element={
             <ProtectedRoute>
-              <Results />
+              <AppLayout>
+                <Results />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/cover-letter"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <CoverLetter />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tracker"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Tracker />
+              </AppLayout>
             </ProtectedRoute>
           }
         />
