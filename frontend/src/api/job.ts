@@ -24,6 +24,9 @@ export const addJob = async (
   return res.data;
 };
 
-export const deleteJob = async (id: number): Promise<void> => {
-  await api.delete(`/job/${id}`);
+export const deleteJob = async (id: number, token: string): Promise<void> => {
+  await api.delete(`/job/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
 };
+ 

@@ -20,6 +20,10 @@ export const uploadResume = async (file: File): Promise<Resume> => {
   return res.data;
 };
 
-export const deleteResume = async (id: number): Promise<void> => {
-  await api.delete(`/resume/${id}`);
+
+export const deleteResume = async (id: number, token: string): Promise<void> => {
+  await api.delete(`/resume/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
 };
+ 
