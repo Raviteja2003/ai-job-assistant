@@ -207,7 +207,7 @@ export default function Sidebar() {
               <path d="M2.5 13L8 3.5L13.5 13H2.5Z" fill="white" fillOpacity="0.95"/>
             </svg>
           </div>
-          <span className="logo-text">JobAssist</span>
+          <span className="logo-text">AI Job Assistant</span>
         </div>
 
         {/* Nav */}
