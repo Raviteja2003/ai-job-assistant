@@ -24,6 +24,8 @@ class JobListItem(BaseModel):
     id: int
     company: str
     role: str
+    required_skills: List[str]
+    responsibilities: List[str]
     created_at: datetime
 
     class Config:

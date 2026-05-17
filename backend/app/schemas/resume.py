@@ -16,6 +16,9 @@ class ResumeUploadResponse(BaseModel):
 class ResumeListItem(BaseModel):
     id: int
     filename: str
+    skills: list[Any]
+    experience: list[Any]
+    projects: list[Any]
     created_at: datetime
 
     class Config:

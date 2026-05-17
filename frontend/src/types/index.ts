@@ -11,6 +11,7 @@ export interface Job {
   id: number;
   company: string;
   role: string;
+  raw_text: string;
   required_skills: string[];
   responsibilities: string[];
   created_at: string;

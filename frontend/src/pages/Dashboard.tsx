@@ -1,10 +1,17 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { getResumes, uploadResume, deleteResume } from "../api/resume";
-import { getJobs, addJob, deleteJob } from "../api/job";
+import {
+  getResumes,
+  uploadResume,
+  deleteResume,
+  getResume,
+} from "../api/resume";
+import { getJobs, addJob, deleteJob, getJob } from "../api/job";
 import { analyzeResume } from "../api/tailor";
 import { type Resume, type Job } from "../types";
 import { useAuthStore } from "../store/authStore";
+import { ResumeDetailModal } from "../components/ResumeDetailModal";
+import { JobDetailModal } from "../components/JobDetailModal";
 
 const IconPlus = () => (
   <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -135,6 +142,51 @@ const btnS: React.CSSProperties = {
   fontFamily: "'DM Sans',sans-serif",
   cursor: "pointer",
 };
+
+const IconEye = () => (
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+    <circle cx="12" cy="12" r="3" />
+  </svg>
+);
+
+
+
+// ── Shared Section wrapper ────────────────────────────────────────────────────
+function Section({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div style={{ marginBottom: 20 }}>
+      <p
+        style={{
+          fontSize: 11,
+          fontWeight: 600,
+          letterSpacing: "0.07em",
+          textTransform: "uppercase",
+          color: "#9CA3AF",
+          marginBottom: 10,
+        }}
+      >
+        {title}
+      </p>
+      {children}
+    </div>
+  );
+}
 
 function UploadModal({
   onClose,
@@ -548,6 +600,9 @@ export default function Dashboard() {
   const [showUpload, setShowUpload] = useState(false);
   const [showAddJob, setShowAddJob] = useState(false);
   const { token } = useAuthStore();
+  const [viewResume, setViewResume] = useState<Resume | null>(null);
+  const [viewJob, setViewJob] = useState<Job | null>(null);
+  const [viewLoading, setViewLoading] = useState(false);
   useEffect(() => {
     (async () => {
       try {
@@ -578,6 +633,32 @@ export default function Dashboard() {
     selectedResumeId !== null && selectedJobId !== null && !loading;
   const selResume = resumes.find((r) => r.id === selectedResumeId);
   const selJob = jobs.find((j) => j.id === selectedJobId);
+
+  const handleViewResume = async (id: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setViewLoading(true);
+    try {
+      const data = await getResume(id);
+      setViewResume(data);
+    } catch {
+      // optionally show error
+    } finally {
+      setViewLoading(false);
+    }
+  };
+
+  const handleViewJob = async (id: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setViewLoading(true);
+    try {
+      const data = await getJob(id);
+      setViewJob(data);
+    } catch {
+      // optionally show error
+    } finally {
+      setViewLoading(false);
+    }
+  };
 
   return (
     <div
@@ -809,6 +890,14 @@ export default function Dashboard() {
                   >
                     <IconTrash />
                   </button>
+                  <button
+                    className="del-btn"
+                    onClick={(e) => handleViewResume(r.id, e)}
+                    style={{ marginRight: 2 }}
+                    title="View details"
+                  >
+                    <IconEye />
+                  </button>
                 </div>
               ))
             )}
@@ -964,6 +1053,14 @@ export default function Dashboard() {
                   >
                     <IconTrash />
                   </button>
+                  <button
+                    className="del-btn"
+                    onClick={(e) => handleViewJob(j.id, e)}
+                    style={{ marginRight: 2 }}
+                    title="View details"
+                  >
+                    <IconEye />
+                  </button>
                 </div>
               ))
             )}
@@ -1092,6 +1189,15 @@ export default function Dashboard() {
             setShowAddJob(false);
           }}
         />
+      )}
+      {viewResume && (
+        <ResumeDetailModal
+          resume={viewResume}
+          onClose={() => setViewResume(null)}
+        />
+      )}
+      {viewJob && (
+        <JobDetailModal job={viewJob} onClose={() => setViewJob(null)} />
       )}
     </div>
   );
