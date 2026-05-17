@@ -56,3 +56,20 @@ def get_job(
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
     return job
+
+
+@router.delete("/{job_id}", status_code=204)
+def delete_job(
+    job_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    job = (
+        db.query(JobDescription)
+        .filter(JobDescription.id == job_id, JobDescription.user_id == current_user.id)
+        .first()
+    )
+    if not job:
+        raise HTTPException(status_code=404, detail="Job description not found")
+    db.delete(job)
+    db.commit()
