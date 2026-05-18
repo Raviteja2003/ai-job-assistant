@@ -7,6 +7,7 @@ from app.api.job import router as job_router
 from app.api import tailor
 from app.api.cover_letter import router as cover_letter_router
 from app.api.tracker import router as tracker_router
+from app.api import interview
 
 app = FastAPI(title="AI Job Assistant API", version="1.0.0")
 
@@ -28,6 +29,7 @@ app.include_router(job_router)
 app.include_router(tailor.router, prefix="/tailor", tags=["tailor"])
 app.include_router(cover_letter_router, prefix="/cover-letter", tags=["cover-letter"])
 app.include_router(tracker_router, prefix="/tracker", tags=["tracker"])
+app.include_router(interview.router, prefix="/interview", tags=["interview"])
 
 @app.get("/health")
 def health():
