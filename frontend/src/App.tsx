@@ -7,6 +7,7 @@ import CoverLetter from "./pages/CoverLetter";
 import Tracker from "./pages/Tracker";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AppLayout from "./components/AppLayout";
+import InterviewPrep from "./pages/InterviewPrep";
 
 export default function App() {
   return (
@@ -52,6 +53,14 @@ export default function App() {
                 <Tracker />
               </AppLayout>
             </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/interview-prep"
+          element={
+            <AppLayout>
+              <InterviewPrep />
+            </AppLayout>
           }
         />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />

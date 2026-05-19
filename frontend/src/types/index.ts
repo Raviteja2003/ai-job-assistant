@@ -29,3 +29,18 @@ export interface TailorResult {
   improved_bullets: ImprovedBullet[];
   summary: string;
 }
+
+
+export interface InterviewQuestion {
+  question: string;
+  category: "behavioral" | "technical" | "role-specific" | "situational";
+  difficulty: "easy" | "medium" | "hard";
+  sample_answer: string;
+}
+
+export interface InterviewResult {
+  company: string;
+  role: string;
+  questions: InterviewQuestion[];
+  tips: string[];
+}
