@@ -44,3 +44,26 @@ export interface InterviewResult {
   questions: InterviewQuestion[];
   tips: string[];
 }
+
+
+export interface LearningResource {
+  title: string;
+  type: "course" | "documentation" | "project idea" | "book";
+  url: string;
+  duration: string;
+  level: "beginner" | "intermediate" | "advanced";
+  why: string;
+}
+
+export interface SkillGapItem {
+  skill: string;
+  priority: "high" | "medium" | "low";
+  context: string;
+  resources: LearningResource[];
+}
+
+export interface SkillGapResult {
+  role: string;
+  items: SkillGapItem[];
+  learning_path: string[];
+}
