@@ -159,8 +159,6 @@ const IconEye = () => (
   </svg>
 );
 
-
-
 // ── Shared Section wrapper ────────────────────────────────────────────────────
 function Section({
   title,
@@ -621,7 +619,13 @@ export default function Dashboard() {
     setLoading(true);
     try {
       const result = await analyzeResume(selectedResumeId, selectedJobId);
-      navigate("/results", { state: { result } });
+      navigate("/results", {
+        state: {
+          result,
+          role: jobs.find((j) => j.id === selectedJobId)?.role || "",
+          job_id: selectedJobId,
+        },
+      });
     } catch {
       setAnalyzeError("Analysis failed. Please try again.");
     } finally {
