@@ -67,3 +67,16 @@ export interface SkillGapResult {
   items: SkillGapItem[];
   learning_path: string[];
 }
+
+
+export type EmailType = "follow-up" | "thank-you" | "withdrawal";
+export type EmailTone = "formal" | "casual" | "enthusiastic";
+
+export interface EmailResult {
+  subject: string;
+  body: string;
+  email_type: string;
+  tone: string;
+  company: string;
+  role: string;
+}
