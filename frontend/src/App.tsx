@@ -8,6 +8,7 @@ import Tracker from "./pages/Tracker";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AppLayout from "./components/AppLayout";
 import InterviewPrep from "./pages/InterviewPrep";
+import EmailGenerator from "./pages/EmailGenerator";
 
 export default function App() {
   return (
@@ -60,6 +61,14 @@ export default function App() {
           element={
             <AppLayout>
               <InterviewPrep />
+            </AppLayout>
+          }
+        />
+        <Route
+          path="/email-generator"
+          element={
+            <AppLayout>
+              <EmailGenerator />
             </AppLayout>
           }
         />
