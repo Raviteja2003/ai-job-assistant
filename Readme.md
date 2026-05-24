@@ -30,6 +30,9 @@ An AI-powered job application toolkit that helps you tailor your resume, generat
 ---
 
 ## 📁 Project Structure
+## 📁 Project Structure
+
+```text
 ai-job-assistant/
 ├── docker-compose.yml
 ├── .env
@@ -38,6 +41,7 @@ ai-job-assistant/
 ├── backend/
 │   ├── Dockerfile
 │   ├── requirements.txt
+│   │
 │   └── app/
 │       ├── main.py
 │       ├── config.py
@@ -90,6 +94,7 @@ ai-job-assistant/
     ├── vite.config.ts
     ├── tsconfig.json
     ├── package.json
+    │
     └── src/
         ├── main.tsx
         ├── App.tsx
@@ -128,6 +133,7 @@ ai-job-assistant/
             ├── Tracker.tsx
             ├── InterviewPrep.tsx
             └── EmailGenerator.tsx
+```
 
 ---
 
