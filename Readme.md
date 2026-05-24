@@ -30,7 +30,7 @@ An AI-powered job application toolkit that helps you tailor your resume, generat
 ---
 
 ## 📁 Project Structure
-## 📁 Project Structure
+
 
 ```text
 ai-job-assistant/
