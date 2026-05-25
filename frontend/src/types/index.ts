@@ -80,3 +80,13 @@ export interface EmailResult {
   company: string;
   role: string;
 }
+
+
+export interface TrackerStats {
+  total: number;
+  saved: number;
+  applied: number;
+  interview: number;
+  offer: number;
+  rejected: number;
+}
