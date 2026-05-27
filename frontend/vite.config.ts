@@ -5,6 +5,14 @@ export default defineConfig({
   plugins: [
     tailwindcss(),
   ],
+  optimizeDeps: {
+    include: ["recharts"],        // force Vite to pre-bundle recharts
+  },
+  resolve: {
+    alias: {
+      "./runtimeConfig": "./runtimeConfig.browser",
+    },
+  },
   server: {
     host: '0.0.0.0',
     port: 3000,
