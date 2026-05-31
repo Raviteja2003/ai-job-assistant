@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { getTrackerStats } from "../api/tracker";
 import { getTimeline, type TimelineEntry } from "../api/tracker";
 import type { TrackerStats } from "../types";
+import { useAuthStore } from "../store/authStore";
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const STATUS_COLORS: Record<string, string> = {
@@ -557,6 +558,7 @@ function LineChart({ data }: { data: TimelineEntry[] }) {
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 export default function Analytics() {
+  const { token } = useAuthStore();
   const [stats, setStats] = useState<TrackerStats | null>(null);
   const [timeline, setTimeline] = useState<TimelineEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -568,7 +570,7 @@ export default function Analytics() {
       setError("");
       try {
         const [statsData, timelineData] = await Promise.all([
-          getTrackerStats(),
+          getTrackerStats(token!),
           getTimeline(),
         ]);
         setStats(statsData);
@@ -580,7 +582,7 @@ export default function Analytics() {
       }
     };
     load();
-  }, []);
+  }, [token]);
 
   const funnelData = stats
     ? [

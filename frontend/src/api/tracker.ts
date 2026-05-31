@@ -76,7 +76,7 @@ export interface TimelineResponse {
 
 export const getTimeline = async (): Promise<TimelineResponse> => {
   const token = localStorage.getItem("token");
-  const response = await axios.get(`${API_URL}/tracker/timeline`, {
+  const response = await axios.get(`${API_BASE}/tracker/timeline`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   return response.data;
