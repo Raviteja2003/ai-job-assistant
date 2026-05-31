@@ -9,6 +9,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import AppLayout from "./components/AppLayout";
 import InterviewPrep from "./pages/InterviewPrep";
 import EmailGenerator from "./pages/EmailGenerator";
+import Analytics from "./pages/Analytics";
 
 export default function App() {
   return (
@@ -69,6 +70,14 @@ export default function App() {
           element={
             <AppLayout>
               <EmailGenerator />
+            </AppLayout>
+          }
+        />
+        <Route
+          path="/analytics"
+          element={
+            <AppLayout>
+              <Analytics />
             </AppLayout>
           }
         />

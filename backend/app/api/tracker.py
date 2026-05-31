@@ -2,7 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List, Optional
-
+from datetime import datetime, timedelta
+from collections import defaultdict
+from app.schemas.tracker import TimelineResponse, TimelineEntry
 from app.api.deps import get_current_user, get_db
 from app.models.user import User
 from app.models.tracked_job import TrackedJob
@@ -27,6 +29,45 @@ def create_tracked_job(
     db.commit()
     db.refresh(job)
     return job
+
+
+
+@router.get("/timeline", response_model=TimelineResponse)
+def get_timeline(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    # Fetch all jobs that have a status beyond "saved"
+    jobs = db.query(TrackedJob).filter(
+        TrackedJob.user_id == current_user.id,
+        TrackedJob.status.in_(["applied", "interview", "offer", "rejected"]),
+    ).all()
+
+    # Group counts by date and status
+    buckets: dict = defaultdict(lambda: {"applied": 0, "interview": 0, "offer": 0, "rejected": 0})
+
+    for job in jobs:
+        # Use applied_date if set, otherwise fall back to created_at
+        date_obj = job.applied_date or job.created_at
+        date_str = date_obj.strftime("%Y-%m-%d") if date_obj else None
+        if date_str and job.status in buckets[date_str]:
+            buckets[date_str][job.status] += 1
+
+    # Sort by date and return last 30 days
+    cutoff = datetime.utcnow() - timedelta(days=30)
+    entries = [
+        TimelineEntry(
+            date=date,
+            applied=counts["applied"],
+            interview=counts["interview"],
+            offer=counts["offer"],
+            rejected=counts["rejected"],
+        )
+        for date, counts in sorted(buckets.items())
+        if datetime.strptime(date, "%Y-%m-%d") >= cutoff
+    ]
+
+    return TimelineResponse(entries=entries)
 
 
 @router.get("/", response_model=List[TrackedJobResponse])

@@ -60,3 +60,24 @@ export const updateTrackedJob = async (id: number, payload: TrackedJobUpdate, to
 
 export const deleteTrackedJob = async (id: number, token: string) =>
   axios.delete(`${API_BASE}/tracker/${id}`, { headers: headers(token) });
+
+
+export interface TimelineEntry {
+  date: string;
+  applied: number;
+  interview: number;
+  offer: number;
+  rejected: number;
+}
+
+export interface TimelineResponse {
+  entries: TimelineEntry[];
+}
+
+export const getTimeline = async (): Promise<TimelineResponse> => {
+  const token = localStorage.getItem("token");
+  const response = await axios.get(`${API_BASE}/tracker/timeline`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
+};

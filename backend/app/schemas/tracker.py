@@ -53,3 +53,13 @@ class TrackedJobStatsResponse(BaseModel):
     interview: int
     offer: int
     rejected: int
+    
+class TimelineEntry(BaseModel):
+    date: str        # "2024-01-15"
+    applied: int
+    interview: int
+    offer: int
+    rejected: int
+
+class TimelineResponse(BaseModel):
+    entries: list[TimelineEntry]
