@@ -14,6 +14,7 @@ An AI-powered job application toolkit that helps you tailor your resume, generat
 - **Interview Prep AI** — Generate tailored interview questions from your resume and job description, categorized by type and difficulty with sample answers
 - **Skill Gap Analyzer** — Get personalized learning resources for every missing skill, with priority ratings and a recommended learning path
 - **Email Generator** — Generate professional Follow-Up, Thank-You, and Withdrawal emails tailored to your resume and the role
+- **Analytics Dashboard** — Visualize your job search pipeline with an application funnel, activity timeline, status breakdown, and response/offer rates
 
 ---
 
@@ -30,7 +31,6 @@ An AI-powered job application toolkit that helps you tailor your resume, generat
 ---
 
 ## 📁 Project Structure
-
 
 ```text
 ai-job-assistant/
@@ -132,7 +132,8 @@ ai-job-assistant/
             ├── CoverLetter.tsx
             ├── Tracker.tsx
             ├── InterviewPrep.tsx
-            └── EmailGenerator.tsx
+            ├── EmailGenerator.tsx
+            └── Analytics.tsx
 ```
 
 ---
@@ -232,6 +233,7 @@ Navigate to `http://localhost:3000`, create an account, and you're ready to go.
 | POST | `/tracker/` | Add a tracked job |
 | GET | `/tracker/` | List all tracked jobs (optional `?status=` filter) |
 | GET | `/tracker/stats` | Get counts per status |
+| GET | `/tracker/timeline` | Get daily activity for last 30 days |
 | GET | `/tracker/{id}` | Get tracked job by ID |
 | PATCH | `/tracker/{id}` | Update a tracked job |
 | DELETE | `/tracker/{id}` | Delete a tracked job |
@@ -268,8 +270,15 @@ Navigate to `http://localhost:3000`, create an account, and you're ready to go.
 - [x] Skill Gap Analyzer — prioritized learning resources and recommended learning path
 - [x] Email Generator — Follow-Up, Thank-You, and Withdrawal emails with tone selection
 
-### Phase 3 — Planned 🔲
-- [ ] Analytics Dashboard — application funnel, response rate charts
+### Phase 3 — Complete ✅
+- [x] Analytics Dashboard — application funnel, activity timeline, status breakdown, response rate and offer rate charts
+
+### Phase 4 — Planned 🔲
+- [ ] AI Mock Interview — chat-style mock interview with AI feedback on your answers
+- [ ] Resume Version Manager — save multiple tailored resume versions per job
+- [ ] Export to PDF — download cover letters and tailored resumes as PDFs
+- [ ] Dashboard Home — unified home screen with recent activity and quick shortcuts
+- [ ] Salary Insights — AI-estimated market salary range based on role, skills, and location
 
 ---
 
@@ -284,16 +293,10 @@ Navigate to `http://localhost:3000`, create an account, and you're ready to go.
 - Backend uses `bcrypt==4.2.1` (pinned for passlib compatibility) and `httpx==0.27.2`
 - All AI calls use `gemini-2.5-flash` — the only free-tier model currently available
 - Type-only imports in frontend use `import type` syntax to comply with Vite `verbatimModuleSyntax`
+- Analytics charts are built with pure SVG — no external charting library required (avoids React 19 peer dependency conflicts)
 
 ---
 
 ## 📄 License
 
 MIT License — feel free to use, modify, and distribute.
-Key changes from your previous README:
-
-Added all 3 Phase 2 features to the Features section
-Added 3 new endpoint tables for Interview Prep, Skill Gap, and Email Generator
-Split the Roadmap into Phase 1 (complete) and Phase 2 (complete) with Phase 3 as the remaining Analytics Dashboard
-Added the Vite verbatimModuleSyntax note to Development Notes
-Updated the opening description to mention the new features
