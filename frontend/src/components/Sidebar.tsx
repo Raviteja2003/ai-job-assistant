@@ -98,7 +98,7 @@ export default function Sidebar() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
         .sidebar-wrap {
-          width: 220px;
+          width: 260px;
           min-height: 100vh;
           background: #fff;
           border-right: 1px solid #F1F2F4;

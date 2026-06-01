@@ -436,7 +436,7 @@ export default function Tracker() {
   // ─── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <div style={{ padding: "32px", maxWidth: "900px", fontFamily: "'DM Sans', sans-serif" }}>
+    <div style={{ padding: "32px", maxWidth: "900px", margin :"0 auto" ,fontFamily: "'DM Sans', sans-serif" }}>
 
       {/* Page header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "24px" }}>

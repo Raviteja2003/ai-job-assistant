@@ -684,6 +684,7 @@ export default function Analytics() {
       style={{
         padding: "32px 36px",
         maxWidth: 960,
+        margin: "0 auto",
         fontFamily: "'DM Sans', sans-serif",
       }}
     >

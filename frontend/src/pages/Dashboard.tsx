@@ -669,6 +669,7 @@ export default function Dashboard() {
       style={{
         padding: "32px 36px",
         maxWidth: 900,
+        margin: "0 auto",
         fontFamily: "'DM Sans',sans-serif",
       }}
     >

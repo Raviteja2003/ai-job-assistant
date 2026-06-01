@@ -106,7 +106,7 @@ export default function EmailGenerator() {
   const canGenerate = selectedResumeId && selectedJobId && !loading;
 
   return (
-    <div style={{ padding: "32px 36px", maxWidth: 900, fontFamily: "'DM Sans', sans-serif" }}>
+    <div style={{ padding: "32px 36px", maxWidth: 900, margin: "0 auto", fontFamily: "'DM Sans', sans-serif" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');`}</style>
 
       {/* Header */}

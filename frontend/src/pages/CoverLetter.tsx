@@ -175,7 +175,7 @@ export default function CoverLetter() {
   // ─── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div style={{ padding: "32px", maxWidth: "820px", fontFamily: "'DM Sans', sans-serif" }}>
+    <div style={{ padding: "32px", maxWidth: "820px", margin:"0 auto",fontFamily: "'DM Sans', sans-serif" }}>
 
       {/* Page header */}
       <div style={{ marginBottom: "28px" }}>
