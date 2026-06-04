@@ -10,6 +10,7 @@ import AppLayout from "./components/AppLayout";
 import InterviewPrep from "./pages/InterviewPrep";
 import EmailGenerator from "./pages/EmailGenerator";
 import Analytics from "./pages/Analytics";
+import MockInterview from "./pages/MockInterview";
 
 export default function App() {
   return (
@@ -78,6 +79,14 @@ export default function App() {
           element={
             <AppLayout>
               <Analytics />
+            </AppLayout>
+          }
+        />
+        <Route
+          path="/mock-interview"
+          element={
+            <AppLayout>
+              <MockInterview />
             </AppLayout>
           }
         />
