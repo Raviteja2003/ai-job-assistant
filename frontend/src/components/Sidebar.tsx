@@ -14,16 +14,7 @@ const NAV_ITEMS = [
       </svg>
     ),
   },
-  {
-    path: "/results",
-    label: "Results",
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-        <path d="M2 13L6 9L9 12L13 7L16 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M2 16h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-      </svg>
-    ),
-  },
+  
   {
     path: "/cover-letter",
     label: "Cover Letter",

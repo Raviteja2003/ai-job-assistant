@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
-import Results from "./pages/Results";
+
 import CoverLetter from "./pages/CoverLetter";
 import Tracker from "./pages/Tracker";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -28,16 +28,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/results"
-          element={
-            <ProtectedRoute>
-              <AppLayout>
-                <Results />
-              </AppLayout>
-            </ProtectedRoute>
-          }
-        />
+        
         <Route
           path="/cover-letter"
           element={
