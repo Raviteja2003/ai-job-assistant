@@ -45,12 +45,6 @@ function scoreBg(score: number): string {
   return "#FEF2F2";
 }
 
-function recommendationColor(rec: string): string {
-  if (rec === "Strong Hire") return "#16A34A";
-  if (rec === "Hire") return "#2563EB";
-  return "#DC2626";
-}
-
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
 function ProgressDots({ current, total }: { current: number; total: number }) {
@@ -210,14 +204,14 @@ function SessionDetailModal({
           borderRadius: 16,
           width: "100%",
           maxWidth: 680,
-          maxHeight: "85vh",
+          height: "85vh", // ← change maxHeight to height (gives it a definite size)
           overflow: "hidden",
           display: "flex",
           flexDirection: "column",
           boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
         }}
       >
-        {/* Modal header */}
+        {/* Modal header — fixed, never scrolls */}
         <div
           style={{
             padding: "18px 24px",
@@ -225,7 +219,7 @@ function SessionDetailModal({
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            flexShrink: 0,
+            flexShrink: 0, // ← prevents header from shrinking
           }}
         >
           <div>
@@ -266,10 +260,12 @@ function SessionDetailModal({
           </button>
         </div>
 
-        {/* Messages */}
+        {/* Scrollable messages body */}
         <div
           style={{
-            overflowY: "auto",
+            flex: 1, // ← fills remaining height
+            minHeight: 0, // ← critical: lets flex child shrink below content size
+            overflowY: "auto", // ← scroll lives here
             padding: "20px 24px",
             display: "flex",
             flexDirection: "column",
@@ -283,7 +279,6 @@ function SessionDetailModal({
                 background: "#F8F9FA",
                 borderRadius: 12,
                 border: "1px solid #F1F2F4",
-                overflow: "hidden",
               }}
             >
               {/* Question */}
@@ -312,7 +307,7 @@ function SessionDetailModal({
               </div>
 
               {/* Answer */}
-              {msg.user_answer && (
+              {msg.user_answer !== null && msg.user_answer !== undefined ? (
                 <div
                   style={{
                     padding: "12px 16px",
@@ -339,58 +334,61 @@ function SessionDetailModal({
                     {msg.user_answer}
                   </div>
                 </div>
-              )}
-
-              {/* Feedback */}
-              {msg.ai_feedback && msg.score !== null && (
-                <div style={{ padding: "12px 16px" }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 10,
-                      marginBottom: 8,
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 600,
-                        color: "#6B7280",
-                        letterSpacing: "0.08em",
-                      }}
-                    >
-                      AI FEEDBACK
-                    </div>
-                    <span
-                      style={{
-                        padding: "2px 8px",
-                        borderRadius: 20,
-                        fontSize: 12,
-                        fontWeight: 700,
-                        background: scoreBg(msg.score),
-                        color: scoreColor(msg.score),
-                      }}
-                    >
-                      {msg.score}/10
-                    </span>
-                  </div>
-                  <div
-                    style={{ fontSize: 13, color: "#374151", lineHeight: 1.6 }}
-                  >
-                    {msg.ai_feedback}
-                  </div>
-                </div>
-              )}
-
-              {/* Unanswered indicator */}
-              {!msg.user_answer && (
+              ) : (
                 <div style={{ padding: "10px 16px", background: "#FFFBEB" }}>
                   <span style={{ fontSize: 12, color: "#D97706" }}>
                     ⏸ Not answered (session was active)
                   </span>
                 </div>
               )}
+
+              {/* AI Feedback */}
+              {msg.ai_feedback !== null &&
+                msg.ai_feedback !== undefined &&
+                msg.score !== null && (
+                  <div style={{ padding: "12px 16px" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        marginBottom: 8,
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 600,
+                          color: "#6B7280",
+                          letterSpacing: "0.08em",
+                        }}
+                      >
+                        AI FEEDBACK
+                      </div>
+                      <span
+                        style={{
+                          padding: "2px 8px",
+                          borderRadius: 20,
+                          fontSize: 12,
+                          fontWeight: 700,
+                          background: scoreBg(msg.score),
+                          color: scoreColor(msg.score),
+                        }}
+                      >
+                        {msg.score}/10
+                      </span>
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 13,
+                        color: "#374151",
+                        lineHeight: 1.6,
+                      }}
+                    >
+                      {msg.ai_feedback}
+                    </div>
+                  </div>
+                )}
             </div>
           ))}
         </div>
@@ -616,10 +614,11 @@ export default function MockInterview() {
           // Reconstruct chat messages from saved transcript
           const restored: ChatMessage[] = [];
           full.messages.forEach((m) => {
+            const answer = m.user_answer;
             // AI question bubble
             restored.push({ role: "ai", text: m.question, turn: m.turn });
             // User answer bubble
-            if (m.user_answer) {
+            if (answer) {
               restored.push({ role: "user", text: m.user_answer });
               // Feedback bubble (ai_feedback stored as plain string, reconstruct minimal feedback)
               if (m.ai_feedback && m.score !== null) {
@@ -712,9 +711,13 @@ export default function MockInterview() {
         setMessages((prev) => [...prev, feedbackMsg, nextMsg]);
         setCurrentTurn(res.turn + 1);
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
+      const errorResponse = e as {
+        response?: { data?: { detail?: string } };
+      };
       const msg =
-        e?.response?.data?.detail || "Failed to submit answer. Please retry.";
+        errorResponse.response?.data?.detail ||
+        "Failed to submit answer. Please retry.";
       setMessages((prev) => [...prev, { role: "ai", text: `⚠️ ${msg}` }]);
     } finally {
       setSubmitting(false);
@@ -1043,27 +1046,23 @@ export default function MockInterview() {
             >
               NUMBER OF QUESTIONS
             </label>
-            <div style={{ display: "flex", gap: 8 }}>
-              {[3, 5, 7, 10].map((n) => (
-                <button
-                  key={n}
-                  onClick={() => setTotalQuestions(n)}
-                  style={{
-                    padding: "8px 20px",
-                    borderRadius: 8,
-                    fontSize: 13,
-                    cursor: "pointer",
-                    border: `1.5px solid ${totalQuestions === n ? "#2563EB" : "#E5E7EB"}`,
-                    background: totalQuestions === n ? "#2563EB" : "#fff",
-                    color: totalQuestions === n ? "#fff" : "#374151",
-                    fontWeight: 600,
-                    transition: "all 0.15s",
-                  }}
-                >
-                  {n}
-                </button>
-              ))}
-            </div>
+
+            <input
+              type="number"
+              min="1"
+              value={totalQuestions}
+              onChange={(e) => setTotalQuestions(Number(e.target.value))}
+              placeholder="Enter number of questions"
+              style={{
+                width: "100%",
+                padding: "10px 12px",
+                borderRadius: 8,
+                border: "1.5px solid #E5E7EB",
+                fontSize: 14,
+                outline: "none",
+                boxSizing: "border-box",
+              }}
+            />
           </div>
 
           {/* Start button */}

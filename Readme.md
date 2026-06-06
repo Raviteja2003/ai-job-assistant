@@ -1,4 +1,4 @@
-# 🧠 AI Job Assistant
+﻿# 🧠 AI Job Assistant
 
 An AI-powered job application toolkit that helps you tailor your resume, generate cover letters, prep for interviews, and track your job search — all in one place.
 
@@ -12,6 +12,7 @@ An AI-powered job application toolkit that helps you tailor your resume, generat
 - **Cover Letter Generator** — Generate tailored cover letters in Formal, Casual, or Creative tone
 - **Job Tracker** — Track every application from Saved → Applied → Interview → Offer / Rejected with notes, salary, and links
 - **Interview Prep AI** — Generate tailored interview questions from your resume and job description, categorized by type and difficulty with sample answers
+- **AI Mock Interview** — Practice with a chat-style mock interview tailored to your resume and job description; get per-answer scores, strengths, and improvement tips, plus a final hiring report with an overall score and recommendation
 - **Skill Gap Analyzer** — Get personalized learning resources for every missing skill, with priority ratings and a recommended learning path
 - **Email Generator** — Generate professional Follow-Up, Thank-You, and Withdrawal emails tailored to your resume and the role
 - **Analytics Dashboard** — Visualize your job search pipeline with an application funnel, activity timeline, status breakdown, and response/offer rates
@@ -52,6 +53,7 @@ ai-job-assistant/
 │       │   ├── user.py
 │       │   ├── resume.py
 │       │   ├── job.py
+│       │   ├── mock_interview.py
 │       │   └── tracked_job.py
 │       │
 │       ├── schemas/
@@ -63,6 +65,7 @@ ai-job-assistant/
 │       │   ├── cover_letter.py
 │       │   ├── tracker.py
 │       │   ├── interview.py
+│       │   ├── mock_interview.py
 │       │   ├── skill_gap.py
 │       │   └── email_generator.py
 │       │
@@ -70,6 +73,7 @@ ai-job-assistant/
 │       │   ├── __init__.py
 │       │   ├── resume_parser.py
 │       │   ├── job_parser.py
+│       │   ├── mock_interview_service.py
 │       │   ├── tailor_service.py
 │       │   ├── cover_letter_service.py
 │       │   ├── interview_service.py
@@ -86,6 +90,7 @@ ai-job-assistant/
 │           ├── cover_letter.py
 │           ├── tracker.py
 │           ├── interview.py
+│           ├── mock_interview.py
 │           ├── skill_gap.py
 │           └── email_generator.py
 │
@@ -114,6 +119,7 @@ ai-job-assistant/
         │   ├── coverLetter.ts
         │   ├── tracker.ts
         │   ├── interview.ts
+        │   ├── mockInterview.ts
         │   ├── skillGap.ts
         │   └── emailGenerator.ts
         │
@@ -132,6 +138,7 @@ ai-job-assistant/
             ├── CoverLetter.tsx
             ├── Tracker.tsx
             ├── InterviewPrep.tsx
+            ├── MockInterview.tsx
             ├── EmailGenerator.tsx
             └── Analytics.tsx
 ```
@@ -253,6 +260,15 @@ Navigate to `http://localhost:3000`, create an account, and you're ready to go.
 |---|---|---|
 | POST | `/email/generate` | Generate a job application email |
 
+### AI Mock Interview
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/mock-interview/start` | Start a new mock interview session |
+| POST | `/mock-interview/{session_id}/respond` | Submit answer to current question; returns per-answer feedback and final hiring report on last turn |
+| GET | `/mock-interview/` | List all mock interview sessions (id, status, question count, created date) |
+| GET | `/mock-interview/{session_id}` | Get mock interview session details |
+| DELETE | `/mock-interview/{session_id}` | Delete a mock interview session |
+
 ---
 
 ## 🗺️ Roadmap
@@ -273,8 +289,8 @@ Navigate to `http://localhost:3000`, create an account, and you're ready to go.
 ### Phase 3 — Complete ✅
 - [x] Analytics Dashboard — application funnel, activity timeline, status breakdown, response rate and offer rate charts
 
-### Phase 4 — Planned 🔲
-- [ ] AI Mock Interview — chat-style mock interview with AI feedback on your answers
+### Phase 4 — In Progress 🚧
+- [x] AI Mock Interview — chat-style mock interview with per-answer AI feedback and a final hiring report
 - [ ] Resume Version Manager — save multiple tailored resume versions per job
 - [ ] Export to PDF — download cover letters and tailored resumes as PDFs
 - [ ] Dashboard Home — unified home screen with recent activity and quick shortcuts
