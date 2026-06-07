@@ -17,6 +17,8 @@ import {
   type SkillGapResponse,
   type SkillGapItem,
 } from "../api/skillGap";
+import { saveResumeVersion } from "../api/resume_version";
+
 const IconPlus = () => (
   <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
     <path
@@ -162,8 +164,6 @@ const IconEye = () => (
     <circle cx="12" cy="12" r="3" />
   </svg>
 );
-
-
 
 // ── Shared Section wrapper ────────────────────────────────────────────────────
 function Section({
@@ -1055,6 +1055,8 @@ export default function Dashboard() {
   const [analysisResult, setAnalysisResult] = useState<TailorResult | null>(
     null,
   );
+  const [versionSaved, setVersionSaved] = useState(false);
+  const [versionSaving, setVersionSaving] = useState(false);
   const [analysisJobId, setAnalysisJobId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<"analysis" | "skill-gap">(
     "analysis",
@@ -1085,6 +1087,7 @@ export default function Dashboard() {
     setSkillGapData(null);
     setSkillGapError("");
     setActiveTab("analysis");
+    setVersionSaved(false);
     try {
       const result = await analyzeResume(selectedResumeId, selectedJobId);
       setAnalysisResult(result);
@@ -1093,6 +1096,31 @@ export default function Dashboard() {
       setAnalyzeError("Analysis failed. Please try again.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSaveVersion = async () => {
+    if (!analysisResult || !selectedResumeId || !analysisJobId) return;
+    const job = jobs.find((j) => j.id === analysisJobId);
+    if (!job) return;
+    setVersionSaving(true);
+    try {
+      await saveResumeVersion(
+        {
+          resume_id: selectedResumeId,
+          job_id: analysisJobId,
+          version_name: `${job.company} — ${job.role}`,
+          match_score: analysisResult.match_score,
+          missing_skills: analysisResult.missing_skills,
+          improved_bullets: analysisResult.improved_bullets,
+        },
+        token!,
+      );
+      setVersionSaved(true);
+    } catch {
+      // optionally surface an error
+    } finally {
+      setVersionSaving(false);
     }
   };
 
@@ -1128,23 +1156,23 @@ export default function Dashboard() {
   };
 
   const handleLoadSkillGap = async (
-  missingSkills: string[],
-  role: string,
-  jobId: number,
-) => {
-  if (skillGapData) return;
-  if (!missingSkills.length) return;
-  setSkillGapLoading(true);
-  setSkillGapError("");
-  try {
-    const data = await getSkillGapResources(missingSkills, role, jobId);
-    setSkillGapData(data);
-  } catch {
-    setSkillGapError("Failed to load skill gap resources. Please try again.");
-  } finally {
-    setSkillGapLoading(false);
-  }
-};
+    missingSkills: string[],
+    role: string,
+    jobId: number,
+  ) => {
+    if (skillGapData) return;
+    if (!missingSkills.length) return;
+    setSkillGapLoading(true);
+    setSkillGapError("");
+    try {
+      const data = await getSkillGapResources(missingSkills, role, jobId);
+      setSkillGapData(data);
+    } catch {
+      setSkillGapError("Failed to load skill gap resources. Please try again.");
+    } finally {
+      setSkillGapLoading(false);
+    }
+  };
 
   return (
     <div
@@ -1723,6 +1751,42 @@ export default function Dashboard() {
                 {analysisResult.summary}
               </p>
             </div>
+          </div>
+
+          {/* Save Version */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              marginBottom: 16,
+            }}
+          >
+            <button
+              onClick={handleSaveVersion}
+              disabled={versionSaved || versionSaving}
+              style={{
+                padding: "8px 18px",
+                background: versionSaved
+                  ? "#F0FDF4"
+                  : versionSaving
+                    ? "#93C5FD"
+                    : "#2563EB",
+                color: versionSaved ? "#16A34A" : "#FFFFFF",
+                border: versionSaved ? "1.5px solid #BBF7D0" : "none",
+                borderRadius: 8,
+                fontSize: 13,
+                fontWeight: 600,
+                cursor:
+                  versionSaved || versionSaving ? "not-allowed" : "pointer",
+                fontFamily: "'DM Sans', sans-serif",
+              }}
+            >
+              {versionSaved
+                ? "✓ Version Saved"
+                : versionSaving
+                  ? "Saving..."
+                  : "💾 Save Version"}
+            </button>
           </div>
 
           {/* Tab bar */}

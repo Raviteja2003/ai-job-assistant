@@ -177,6 +177,7 @@ const NAV_ITEMS = [
     ),
   },
   { path: "/salary-insights", label: "Salary Insights", icon: "💰" },
+  { path: "/resume-versions", label: "Resume Versions", icon: "📄" }
 ];
 
 export default function Sidebar() {

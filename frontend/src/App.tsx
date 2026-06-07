@@ -11,7 +11,7 @@ import InterviewPrep from "./pages/InterviewPrep";
 import EmailGenerator from "./pages/EmailGenerator";
 import Analytics from "./pages/Analytics";
 import MockInterview from "./pages/MockInterview";
-
+import ResumeVersions from "./pages/ResumeVersions";
 export default function App() {
   return (
     <BrowserRouter>
@@ -86,6 +86,14 @@ export default function App() {
           element={
             <AppLayout>
               <SalaryInsights />
+            </AppLayout>
+          }
+        />
+        <Route
+          path="/resume-versions"
+          element={
+            <AppLayout>
+              <ResumeVersions />
             </AppLayout>
           }
         />
