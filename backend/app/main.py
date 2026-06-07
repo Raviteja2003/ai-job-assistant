@@ -11,6 +11,9 @@ from app.api import interview
 from app.api import skill_gap
 from app.api import email_generator
 from app.api import mock_interview
+from app.api import salary
+
+
 
 app = FastAPI(title="AI Job Assistant API", version="1.0.0")
 
@@ -36,6 +39,7 @@ app.include_router(interview.router, prefix="/interview", tags=["interview"])
 app.include_router(skill_gap.router, prefix="/skill-gap", tags=["skill-gap"])
 app.include_router(email_generator.router, prefix="/email", tags=["email"])
 app.include_router(mock_interview.router)
+app.include_router(salary.router, prefix="/salary", tags=["salary"])
 
 @app.get("/health")
 def health():
