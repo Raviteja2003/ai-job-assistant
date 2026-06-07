@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
-
+import SalaryInsights from "./pages/SalaryInsights";
 import CoverLetter from "./pages/CoverLetter";
 import Tracker from "./pages/Tracker";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -28,7 +28,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-        
+
         <Route
           path="/cover-letter"
           element={
@@ -78,6 +78,14 @@ export default function App() {
           element={
             <AppLayout>
               <MockInterview />
+            </AppLayout>
+          }
+        />
+        <Route
+          path="/salary-insights"
+          element={
+            <AppLayout>
+              <SalaryInsights />
             </AppLayout>
           }
         />
