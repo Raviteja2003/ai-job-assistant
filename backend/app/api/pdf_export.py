@@ -1,0 +1,73 @@
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import Response
+from sqlalchemy.orm import Session
+from app.db import get_db
+from app.api.deps import get_current_user
+from app.models.user import User
+from app.models.resume_version import ResumeVersion
+from app.services.pdf_service import (
+    generate_resume_version_pdf,
+    generate_cover_letter_pdf,
+)
+from pydantic import BaseModel
+
+router = APIRouter()
+
+
+@router.get("/resume-version/{version_id}")
+def export_resume_version(
+    version_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    version = (
+        db.query(ResumeVersion)
+        .filter(
+            ResumeVersion.id == version_id,
+            ResumeVersion.user_id == current_user.id,
+        )
+        .first()
+    )
+    if not version:
+        raise HTTPException(status_code=404, detail="Version not found")
+
+    pdf_bytes = generate_resume_version_pdf(
+        version_name=version.version_name,
+        match_score=version.match_score,
+        missing_skills=version.missing_skills or [],
+        improved_bullets=version.improved_bullets or [],
+    )
+
+    filename = version.version_name.replace(" ", "_").replace("—", "-") + ".pdf"
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+class CoverLetterExportRequest(BaseModel):
+    company: str
+    role: str
+    content: str
+    tone: str
+
+
+@router.post("/cover-letter")
+def export_cover_letter(
+    payload: CoverLetterExportRequest,
+    current_user: User = Depends(get_current_user),
+):
+    pdf_bytes = generate_cover_letter_pdf(
+        company=payload.company,
+        role=payload.role,
+        content=payload.content,
+        tone=payload.tone,
+    )
+
+    filename = f"Cover_Letter_{payload.company}_{payload.role}.pdf".replace(" ", "_")
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )

@@ -1,9 +1,10 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 import { getResumes, getResume, deleteResume } from "../api/resume";
 import { getJobs, getJob, deleteJob } from "../api/job";
 import { generateCoverLetter } from "../api/coverLetter";
+import { exportCoverLetterPdf } from "../api/pdfExport";
 import { ResumeDetailModal } from "../components/ResumeDetailModal";
 import { JobDetailModal } from "../components/JobDetailModal";
 import type { Resume, Job } from "../types";
@@ -87,6 +88,7 @@ export default function CoverLetter() {
   const [result, setResult] = useState<{ cover_letter: string; company: string; role: string } | null>(null);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   // Detail modals
   const [viewResume, setViewResume] = useState<Resume | null>(null);
@@ -122,18 +124,12 @@ export default function CoverLetter() {
 
   async function handleViewResume(id: number) {
     if (!token) return;
-    try {
-      const data = await getResume(id);
-      setViewResume(data);
-    } catch {}
+    try { const data = await getResume(id); setViewResume(data); } catch {}
   }
 
   async function handleViewJob(id: number) {
     if (!token) return;
-    try {
-      const data = await getJob(id);
-      setViewJob(data);
-    } catch {}
+    try { const data = await getJob(id); setViewJob(data); } catch {}
   }
 
   async function handleDeleteResume(id: number) {
@@ -161,21 +157,40 @@ export default function CoverLetter() {
     setTimeout(() => setCopied(false), 2000);
   }
 
-  function handleDownload() {
+  function handleDownloadTxt() {
     if (!result) return;
     const blob = new Blob([result.cover_letter], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `cover-letter-${result.company}-${result.role}.txt`.toLowerCase().replace(/\s+/g, "-");
+    a.download = `cover-letter-${result.company}-${result.role}.txt`
+      .toLowerCase().replace(/\s+/g, "-");
     a.click();
     URL.revokeObjectURL(url);
+  }
+
+  async function handleDownloadPdf() {
+    if (!result || !token) return;
+    setExporting(true);
+    try {
+      await exportCoverLetterPdf(
+        result.company,
+        result.role,
+        result.cover_letter,
+        tone,
+        token
+      );
+    } catch {
+      // optionally show error
+    } finally {
+      setExporting(false);
+    }
   }
 
   // ─── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div style={{ padding: "32px", maxWidth: "820px", margin:"0 auto",fontFamily: "'DM Sans', sans-serif" }}>
+    <div style={{ padding: "32px", maxWidth: "820px", margin: "0 auto", fontFamily: "'DM Sans', sans-serif" }}>
 
       {/* Page header */}
       <div style={{ marginBottom: "28px" }}>
@@ -308,7 +323,13 @@ export default function CoverLetter() {
             </div>
             <div style={{ display: "flex", gap: "8px" }}>
               <ActionButton onClick={handleCopy} icon={<IconCopy />} label={copied ? "Copied!" : "Copy"} success={copied} />
-              <ActionButton onClick={handleDownload} icon={<IconDownload />} label="Download .txt" />
+              <ActionButton onClick={handleDownloadTxt} icon={<IconDownload />} label="Download .txt" />
+              <ActionButton
+                onClick={handleDownloadPdf}
+                icon={<IconDownload />}
+                label={exporting ? "Exporting..." : "Download PDF"}
+                disabled={exporting}
+              />
               <ActionButton onClick={handleGenerate} icon={<IconRefresh />} label="Regenerate" />
             </div>
           </div>
@@ -365,7 +386,6 @@ function SelectCard({
         transition: "all 0.15s",
       }}
     >
-      {/* Radio — selects the card */}
       <div
         onClick={onClick}
         style={{
@@ -374,8 +394,6 @@ function SelectCard({
           cursor: "pointer", transition: "all 0.15s",
         }}
       />
-
-      {/* Label — also selects */}
       <div onClick={onClick} style={{ flex: 1, overflow: "hidden", cursor: "pointer" }}>
         <div style={{
           fontSize: "12.5px", fontWeight: 500,
@@ -386,8 +404,6 @@ function SelectCard({
         </div>
         <div style={{ fontSize: "11px", color: "#9CA3AF" }}>{sublabel}</div>
       </div>
-
-      {/* View + Delete — visible on hover */}
       <div style={{ display: "flex", gap: "4px", opacity: hovered ? 1 : 0, transition: "opacity 0.15s", flexShrink: 0 }}>
         <button
           onClick={(e) => { e.stopPropagation(); onView(); }}
@@ -419,19 +435,28 @@ function EmptySelect({ label }: { label: string }) {
   );
 }
 
-function ActionButton({ onClick, icon, label, success }: {
-  onClick: () => void; icon: React.ReactNode; label: string; success?: boolean;
+function ActionButton({ onClick, icon, label, success, disabled }: {
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+  success?: boolean;
+  disabled?: boolean;
 }) {
   return (
-    <button onClick={onClick} style={{
-      display: "flex", alignItems: "center", gap: "5px",
-      padding: "7px 12px", borderRadius: "7px",
-      border: success ? "1px solid #BBF7D0" : "1px solid #E5E7EB",
-      background: success ? "#F0FDF4" : "#fff",
-      color: success ? "#16A34A" : "#374151",
-      fontFamily: "'DM Sans', sans-serif", fontSize: "12.5px", fontWeight: 500,
-      cursor: "pointer", transition: "all 0.15s",
-    }}>
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "flex", alignItems: "center", gap: "5px",
+        padding: "7px 12px", borderRadius: "7px",
+        border: success ? "1px solid #BBF7D0" : "1px solid #E5E7EB",
+        background: success ? "#F0FDF4" : "#fff",
+        color: success ? "#16A34A" : disabled ? "#9CA3AF" : "#374151",
+        fontFamily: "'DM Sans', sans-serif", fontSize: "12.5px", fontWeight: 500,
+        cursor: disabled ? "not-allowed" : "pointer", transition: "all 0.15s",
+        opacity: disabled ? 0.7 : 1,
+      }}
+    >
       {icon}{label}
     </button>
   );

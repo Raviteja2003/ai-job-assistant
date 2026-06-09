@@ -13,7 +13,7 @@ from app.api import email_generator
 from app.api import mock_interview
 from app.api import salary
 from app.api import resume_versions
-
+from app.api import pdf_export
 
 app = FastAPI(title="AI Job Assistant API", version="1.0.0")
 
@@ -41,6 +41,7 @@ app.include_router(email_generator.router, prefix="/email", tags=["email"])
 app.include_router(mock_interview.router)
 app.include_router(salary.router, prefix="/salary", tags=["salary"])
 app.include_router(resume_versions.router, prefix="/resume-versions", tags=["resume-versions"])
+app.include_router(pdf_export.router, prefix="/export", tags=["export"])
 
 @app.get("/health")
 def health():
