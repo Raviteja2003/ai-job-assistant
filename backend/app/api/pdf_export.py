@@ -5,10 +5,8 @@ from app.db import get_db
 from app.api.deps import get_current_user
 from app.models.user import User
 from app.models.resume_version import ResumeVersion
-from app.services.pdf_service import (
-    generate_resume_version_pdf,
-    generate_cover_letter_pdf,
-)
+from app.models.resume import Resume
+from app.services.pdf_service import generate_resume_pdf, generate_cover_letter_pdf
 from pydantic import BaseModel
 
 router = APIRouter()
@@ -31,10 +29,27 @@ def export_resume_version(
     if not version:
         raise HTTPException(status_code=404, detail="Version not found")
 
-    pdf_bytes = generate_resume_version_pdf(
+    resume = (
+        db.query(Resume)
+        .filter(
+            Resume.id == version.resume_id,
+            Resume.user_id == current_user.id,
+        )
+        .first()
+    )
+    if not resume:
+        raise HTTPException(status_code=404, detail="Original resume not found")
+
+    resume_raw = {
+        "experience": resume.experience or [],
+        "projects":   resume.projects or [],
+        "education":  resume.education or [],
+        "skills":     resume.skills or [],
+    }
+
+    pdf_bytes = generate_resume_pdf(
         version_name=version.version_name,
-        match_score=version.match_score,
-        missing_skills=version.missing_skills or [],
+        resume_raw=resume_raw,
         improved_bullets=version.improved_bullets or [],
     )
 
@@ -64,7 +79,6 @@ def export_cover_letter(
         content=payload.content,
         tone=payload.tone,
     )
-
     filename = f"Cover_Letter_{payload.company}_{payload.role}.pdf".replace(" ", "_")
     return Response(
         content=pdf_bytes,

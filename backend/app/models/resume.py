@@ -14,3 +14,4 @@ class Resume(Base):
     experience   = Column(JSONB, default=list)         # [{title, company, duration, bullets}]
     projects     = Column(JSONB, default=list)         # [{name, description, tech}]
     created_at   = Column(DateTime(timezone=True), server_default=func.now())
+    education = Column(JSONB, default=list)
