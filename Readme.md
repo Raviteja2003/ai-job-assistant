@@ -6,9 +6,11 @@ An AI-powered job application toolkit that helps you tailor your resume, generat
 
 ## ✨ Features
 
-- **Resume Upload & Parsing** — Upload PDF or DOCX resumes; AI extracts skills, experience, and projects automatically
+- **Resume Upload & Parsing** — Upload PDF or DOCX resumes; AI extracts name, contact info, skills, experience, projects, education, and summary automatically
 - **Job Description Parser** — Paste any job description; AI extracts required skills and responsibilities
 - **Resume Tailoring** — Get a match score, identify missing skills, and receive AI-improved bullet points for your resume
+- **Resume Version Manager** — Save multiple tailored resume versions per job application and manage them from a dedicated page
+- **Export to PDF** — Download tailored resumes as professionally formatted PDFs with AI-improved bullets highlighted, and cover letters as PDFs
 - **Cover Letter Generator** — Generate tailored cover letters in Formal, Casual, or Creative tone
 - **Job Tracker** — Track every application from Saved → Applied → Interview → Offer / Rejected with notes, salary, and links
 - **Interview Prep AI** — Generate tailored interview questions from your resume and job description, categorized by type and difficulty with sample answers
@@ -27,6 +29,7 @@ An AI-powered job application toolkit that helps you tailor your resume, generat
 | Backend | FastAPI + Python + SQLAlchemy + JWT Auth |
 | Database | PostgreSQL |
 | AI | Google Gemini API (`gemini-2.5-flash`) |
+| PDF Generation | WeasyPrint |
 | DevOps | Docker + Docker Compose |
 
 ---
@@ -52,6 +55,7 @@ ai-job-assistant/
 │       │   ├── __init__.py
 │       │   ├── user.py
 │       │   ├── resume.py
+│       │   ├── resume_version.py
 │       │   ├── job.py
 │       │   ├── mock_interview.py
 │       │   └── tracked_job.py
@@ -60,6 +64,7 @@ ai-job-assistant/
 │       │   ├── __init__.py
 │       │   ├── auth.py
 │       │   ├── resume.py
+│       │   ├── resume_version.py
 │       │   ├── job.py
 │       │   ├── tailor.py
 │       │   ├── cover_letter.py
@@ -78,13 +83,15 @@ ai-job-assistant/
 │       │   ├── cover_letter_service.py
 │       │   ├── interview_service.py
 │       │   ├── skill_gap_service.py
-│       │   └── email_service.py
+│       │   ├── email_service.py
+│       │   └── pdf_service.py
 │       │
 │       └── api/
 │           ├── __init__.py
 │           ├── deps.py
 │           ├── auth.py
 │           ├── resume.py
+│           ├── resume_version.py
 │           ├── job.py
 │           ├── tailor.py
 │           ├── cover_letter.py
@@ -92,7 +99,8 @@ ai-job-assistant/
 │           ├── interview.py
 │           ├── mock_interview.py
 │           ├── skill_gap.py
-│           └── email_generator.py
+│           ├── email_generator.py
+│           └── pdf_export.py
 │
 └── frontend/
     ├── Dockerfile
@@ -121,7 +129,9 @@ ai-job-assistant/
         │   ├── interview.ts
         │   ├── mockInterview.ts
         │   ├── skillGap.ts
-        │   └── emailGenerator.ts
+        │   ├── emailGenerator.ts
+        │   ├── resume_version.ts
+        │   └── pdfExport.ts
         │
         ├── components/
         │   ├── ProtectedRoute.tsx
@@ -133,8 +143,9 @@ ai-job-assistant/
         └── pages/
             ├── Login.tsx
             ├── Register.tsx
+            ├── Home.tsx
             ├── Dashboard.tsx
-            ├── Results.tsx
+            ├── ResumeVersions.tsx
             ├── CoverLetter.tsx
             ├── Tracker.tsx
             ├── InterviewPrep.tsx
@@ -165,10 +176,10 @@ Create a `.env` file in the root directory:
 
 ```env
 # Database
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=yourpassword
-POSTGRES_DB=aijobassistant
-DATABASE_URL=postgresql://postgres:yourpassword@db:5432/aijobassistant
+POSTGRES_USER=jobuser
+POSTGRES_PASSWORD=jobpassword
+POSTGRES_DB=jobassistant
+DATABASE_URL=postgresql://jobuser:jobpassword@db:5432/jobassistant
 
 # Auth
 SECRET_KEY=your-secret-key-here
@@ -211,10 +222,10 @@ Navigate to `http://localhost:3000`, create an account, and you're ready to go.
 ### Resume
 | Method | Endpoint | Description |
 |---|---|---|
-| POST | `/resume/upload` | Upload and AI-parse a resume |
+| POST | `/resume/upload` | Upload and AI-parse a resume (extracts name, contact, summary, skills, experience, projects, education) |
 | GET | `/resume/` | List all resumes |
 | GET | `/resume/{id}` | Get resume by ID |
-| DELETE | `/resume/{id}` | Delete a resume |
+| DELETE | `/resume/{id}` | Delete a resume (cascades to mock interviews and resume versions) |
 
 ### Job Description
 | Method | Endpoint | Description |
@@ -228,6 +239,20 @@ Navigate to `http://localhost:3000`, create an account, and you're ready to go.
 | Method | Endpoint | Description |
 |---|---|---|
 | POST | `/tailor/analyze` | Analyze resume vs job description |
+
+### Resume Versions
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/resume-versions/save` | Save a tailored resume version |
+| GET | `/resume-versions/` | List all saved resume versions |
+| GET | `/resume-versions/{id}` | Get a specific resume version |
+| DELETE | `/resume-versions/{id}` | Delete a resume version |
+
+### Export to PDF
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/export/resume-version/{id}` | Export a tailored resume version as PDF |
+| POST | `/export/cover-letter` | Export a cover letter as PDF |
 
 ### Cover Letter
 | Method | Endpoint | Description |
@@ -264,10 +289,10 @@ Navigate to `http://localhost:3000`, create an account, and you're ready to go.
 | Method | Endpoint | Description |
 |---|---|---|
 | POST | `/mock-interview/start` | Start a new mock interview session |
-| POST | `/mock-interview/{session_id}/respond` | Submit answer to current question; returns per-answer feedback and final hiring report on last turn |
-| GET | `/mock-interview/` | List all mock interview sessions (id, status, question count, created date) |
-| GET | `/mock-interview/{session_id}` | Get mock interview session details |
-| DELETE | `/mock-interview/{session_id}` | Delete a mock interview session |
+| POST | `/mock-interview/{session_id}/respond` | Submit answer; returns per-answer feedback and final hiring report on last turn |
+| GET | `/mock-interview/` | List all mock interview sessions |
+| GET | `/mock-interview/{session_id}` | Get session details |
+| DELETE | `/mock-interview/{session_id}` | Delete a session |
 
 ---
 
@@ -289,11 +314,13 @@ Navigate to `http://localhost:3000`, create an account, and you're ready to go.
 ### Phase 3 — Complete ✅
 - [x] Analytics Dashboard — application funnel, activity timeline, status breakdown, response rate and offer rate charts
 
-### Phase 4 — In Progress 🚧
+### Phase 4 — Complete ✅
 - [x] AI Mock Interview — chat-style mock interview with per-answer AI feedback and a final hiring report
-- [ ] Resume Version Manager — save multiple tailored resume versions per job
-- [ ] Export to PDF — download cover letters and tailored resumes as PDFs
-- [ ] Dashboard Home — unified home screen with recent activity and quick shortcuts
+- [x] Resume Version Manager — save multiple tailored resume versions per job, view and delete from a dedicated page
+- [x] Export to PDF — download tailored resumes as professionally formatted PDFs (with AI-improved bullets highlighted in blue) and cover letters as PDFs
+
+
+### Phase 5 — Planned 🗓️
 - [ ] Salary Insights — AI-estimated market salary range based on role, skills, and location
 
 ---
@@ -301,15 +328,35 @@ Navigate to `http://localhost:3000`, create an account, and you're ready to go.
 ## 🔧 Development Notes
 
 - Database tables are **auto-created** on startup via `Base.metadata.create_all` — no manual migrations needed
+- New columns added after initial setup require a manual `ALTER TABLE` — see below
 - Live reload is enabled via Docker volumes — no rebuild needed for code changes
 - Rebuild containers only when changing `requirements.txt`:
+
 ```bash
-  docker compose up --build
+docker compose up --build
 ```
-- Backend uses `bcrypt==4.2.1` (pinned for passlib compatibility) and `httpx==0.27.2`
-- All AI calls use `gemini-2.5-flash` — the only free-tier model currently available
-- Type-only imports in frontend use `import type` syntax to comply with Vite `verbatimModuleSyntax`
-- Analytics charts are built with pure SVG — no external charting library required (avoids React 19 peer dependency conflicts)
+
+### Manual DB migrations (if upgrading an existing instance)
+
+If you started the app before Resume Version Manager and PDF export were added, run these once against your running DB container:
+
+```bash
+docker exec -it job_assistant_db psql -U jobuser -d jobassistant -c "
+  ALTER TABLE resumes ADD COLUMN IF NOT EXISTS education JSONB DEFAULT '[]';
+  ALTER TABLE resumes ADD COLUMN IF NOT EXISTS name VARCHAR;
+  ALTER TABLE resumes ADD COLUMN IF NOT EXISTS contact JSONB DEFAULT '{}';
+  ALTER TABLE resumes ADD COLUMN IF NOT EXISTS summary TEXT;
+"
+```
+
+After running migrations, re-upload any existing resumes so the new fields (name, contact, summary, education) are populated by the AI parser.
+
+### PDF export notes
+
+- PDFs are generated server-side using **WeasyPrint**
+- AI-improved bullet points are highlighted in blue with an "AI improved" badge
+- Candidate name, contact line, and summary appear in the header if present on the resume
+- Existing resumes uploaded before the name/contact/summary fields were added will need to be re-uploaded to show a full header
 
 ---
 

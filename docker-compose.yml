@@ -4,9 +4,9 @@ services:
     image: postgres:16-alpine
     container_name: job_assistant_db
     environment:
-      POSTGRES_USER: jobuser
-      POSTGRES_PASSWORD: jobpassword
-      POSTGRES_DB: jobassistant
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -21,8 +21,8 @@ services:
     build: ./backend
     container_name: job_assistant_backend
     environment:
-      DATABASE_URL: postgresql://jobuser:jobpassword@db:5432/jobassistant
-      SECRET_KEY: your-secret-key-change-this
+      DATABASE_URL: ${DATABASE_URL}
+      SECRET_KEY: ${SECRET_KEY}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
     ports:
       - "8000:8000"
