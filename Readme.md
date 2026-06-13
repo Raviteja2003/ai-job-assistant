@@ -11,6 +11,7 @@ An AI-powered job application toolkit that helps you tailor your resume, generat
 - **Resume Tailoring** — Get a match score, identify missing skills, and receive AI-improved bullet points for your resume
 - **Resume Version Manager** — Save multiple tailored resume versions per job application and manage them from a dedicated page
 - **Export to PDF** — Download tailored resumes as professionally formatted PDFs with AI-improved bullets highlighted, and cover letters as PDFs
+- **Salary Insights** — Get AI-estimated market salary ranges based on role, location, experience level, and skills; auto-detects currency by location (USD, INR, GBP, etc.) with market context, top paying companies, negotiation tips, and confidence rating
 - **Cover Letter Generator** — Generate tailored cover letters in Formal, Casual, or Creative tone
 - **Job Tracker** — Track every application from Saved → Applied → Interview → Offer / Rejected with notes, salary, and links
 - **Interview Prep AI** — Generate tailored interview questions from your resume and job description, categorized by type and difficulty with sample answers
@@ -65,6 +66,7 @@ ai-job-assistant/
 │       │   ├── auth.py
 │       │   ├── resume.py
 │       │   ├── resume_version.py
+│       │   ├── salary.py
 │       │   ├── job.py
 │       │   ├── tailor.py
 │       │   ├── cover_letter.py
@@ -84,6 +86,7 @@ ai-job-assistant/
 │       │   ├── interview_service.py
 │       │   ├── skill_gap_service.py
 │       │   ├── email_service.py
+│       │   ├── salary_service.py
 │       │   └── pdf_service.py
 │       │
 │       └── api/
@@ -100,6 +103,7 @@ ai-job-assistant/
 │           ├── mock_interview.py
 │           ├── skill_gap.py
 │           ├── email_generator.py
+│           ├── salary.py
 │           └── pdf_export.py
 │
 └── frontend/
@@ -131,6 +135,7 @@ ai-job-assistant/
         │   ├── skillGap.ts
         │   ├── emailGenerator.ts
         │   ├── resume_version.ts
+        │   ├── salary.ts
         │   └── pdfExport.ts
         │
         ├── components/
@@ -146,6 +151,7 @@ ai-job-assistant/
             ├── Home.tsx
             ├── Dashboard.tsx
             ├── ResumeVersions.tsx
+            ├── SalaryInsights.tsx
             ├── CoverLetter.tsx
             ├── Tracker.tsx
             ├── InterviewPrep.tsx
@@ -176,13 +182,13 @@ Create a `.env` file in the root directory:
 
 ```env
 # Database
-POSTGRES_USER=jobuser
-POSTGRES_PASSWORD=jobpassword
-POSTGRES_DB=jobassistant
+POSTGRES_USER=user
+POSTGRES_PASSWORD=password
+POSTGRES_DB=assistant
 DATABASE_URL=postgresql://jobuser:jobpassword@db:5432/jobassistant
 
 # Auth
-SECRET_KEY=your-secret-key-here
+SECRET_KEY=your-secret
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_DAYS=7
 
@@ -238,7 +244,7 @@ Navigate to `http://localhost:3000`, create an account, and you're ready to go.
 ### Tailor
 | Method | Endpoint | Description |
 |---|---|---|
-| POST | `/tailor/analyze` | Analyze resume vs job description |
+| POST | `/tailor/analyze` | Analyze resume vs job description — returns match score, missing skills, and improved bullets |
 
 ### Resume Versions
 | Method | Endpoint | Description |
@@ -251,8 +257,13 @@ Navigate to `http://localhost:3000`, create an account, and you're ready to go.
 ### Export to PDF
 | Method | Endpoint | Description |
 |---|---|---|
-| GET | `/export/resume-version/{id}` | Export a tailored resume version as PDF |
+| GET | `/export/resume-version/{id}` | Export a tailored resume as a full formatted PDF with AI-improved bullets merged in |
 | POST | `/export/cover-letter` | Export a cover letter as PDF |
+
+### Salary Insights
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/salary/estimate` | Estimate market salary range based on role, location, experience level, and skills |
 
 ### Cover Letter
 | Method | Endpoint | Description |
@@ -316,12 +327,11 @@ Navigate to `http://localhost:3000`, create an account, and you're ready to go.
 
 ### Phase 4 — Complete ✅
 - [x] AI Mock Interview — chat-style mock interview with per-answer AI feedback and a final hiring report
+
+### Phase 5 — Complete ✅
 - [x] Resume Version Manager — save multiple tailored resume versions per job, view and delete from a dedicated page
-- [x] Export to PDF — download tailored resumes as professionally formatted PDFs (with AI-improved bullets highlighted in blue) and cover letters as PDFs
-
-
-### Phase 5 — Planned 🗓️
-- [ ] Salary Insights — AI-estimated market salary range based on role, skills, and location
+- [x] Export to PDF — download tailored resumes as professionally formatted PDFs (with AI-improved bullets merged in) and cover letters as PDFs
+- [x] Salary Insights — AI-estimated market salary range based on role, skills, and location with auto-detected currency, market context, top paying companies, and negotiation tips
 
 ---
 
@@ -354,7 +364,7 @@ After running migrations, re-upload any existing resumes so the new fields (name
 ### PDF export notes
 
 - PDFs are generated server-side using **WeasyPrint**
-- AI-improved bullet points are highlighted in blue with an "AI improved" badge
+- AI-improved bullet points are merged into the original resume structure using string similarity matching (`difflib.SequenceMatcher`, threshold 0.6)
 - Candidate name, contact line, and summary appear in the header if present on the resume
 - Existing resumes uploaded before the name/contact/summary fields were added will need to be re-uploaded to show a full header
 
