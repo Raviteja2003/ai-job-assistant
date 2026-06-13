@@ -134,7 +134,7 @@ function SkillGapTab({
                   <div style={{ flex: 1 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
                       <span style={{ fontSize: 14 }}>{TYPE_ICONS[res.type] || "🔗"}</span>
-                      
+                      <a
                         href={res.url}
                         target="_blank"
                         rel="noopener noreferrer"
