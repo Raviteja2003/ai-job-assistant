@@ -41,10 +41,13 @@ def export_resume_version(
         raise HTTPException(status_code=404, detail="Original resume not found")
 
     resume_raw = {
+        "name":       resume.name or "",
+        "contact":    resume.contact or {},
+        "summary":    resume.summary or "",
+        "skills":     resume.skills or [],
         "experience": resume.experience or [],
         "projects":   resume.projects or [],
         "education":  resume.education or [],
-        "skills":     resume.skills or [],
     }
 
     pdf_bytes = generate_resume_pdf(

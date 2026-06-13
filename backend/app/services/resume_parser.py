@@ -40,12 +40,20 @@ def parse_resume_with_ai(raw_text: str) -> dict:
 
 Return ONLY a valid JSON object with exactly this structure, no extra text:
 {{
+  "name": "Full Name",
+  "contact": {{
+    "email": "email@example.com",
+    "phone": "+1 234 567 8900",
+    "linkedin": "linkedin.com/in/handle",
+    "location": "City, Country"
+  }},
+  "summary": "One or two sentence professional summary from the resume, or empty string if not present.",
   "skills": ["skill1", "skill2"],
   "experience": [
     {{
       "title": "Job Title",
       "company": "Company Name",
-      "duration": "Jan 2022 - Present",
+      "dates": "Jan 2022 - Present",
       "bullets": ["responsibility 1", "responsibility 2"]
     }}
   ],
@@ -53,10 +61,21 @@ Return ONLY a valid JSON object with exactly this structure, no extra text:
     {{
       "name": "Project Name",
       "description": "What it does",
-      "tech": ["tech1", "tech2"]
+      "tech": ["tech1", "tech2"],
+      "dates": "Jan 2023 - Mar 2023",
+      "bullets": ["what was built", "impact or outcome"]
+    }}
+  ],
+  "education": [
+    {{
+      "institution": "University Name",
+      "degree": "Bachelor of Science in Computer Science",
+      "dates": "2018 - 2022"
     }}
   ]
 }}
+
+If a field is not present in the resume, use an empty string, empty list, or empty object as appropriate.
 
 Resume text:
 {raw_text}"""
