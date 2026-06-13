@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
 
-const BASE = 'http://localhost:8000';
+const BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";;
 
 function authHeaders() {
   const token = useAuthStore.getState().token;
