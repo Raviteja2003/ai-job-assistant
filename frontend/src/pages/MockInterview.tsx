@@ -619,7 +619,7 @@ export default function MockInterview() {
             restored.push({ role: "ai", text: m.question, turn: m.turn });
             // User answer bubble
             if (answer) {
-              restored.push({ role: "user", text: m.user_answer });
+              restored.push({ role: "user", text: answer });
               // Feedback bubble (ai_feedback stored as plain string, reconstruct minimal feedback)
               if (m.ai_feedback && m.score !== null) {
                 restored.push({

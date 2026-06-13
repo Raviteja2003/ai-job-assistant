@@ -1,5 +1,4 @@
 import { useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   getResumes,
   uploadResume,
@@ -164,33 +163,6 @@ const IconEye = () => (
     <circle cx="12" cy="12" r="3" />
   </svg>
 );
-
-// ── Shared Section wrapper ────────────────────────────────────────────────────
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div style={{ marginBottom: 20 }}>
-      <p
-        style={{
-          fontSize: 11,
-          fontWeight: 600,
-          letterSpacing: "0.07em",
-          textTransform: "uppercase",
-          color: "#9CA3AF",
-          marginBottom: 10,
-        }}
-      >
-        {title}
-      </p>
-      {children}
-    </div>
-  );
-}
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -1038,7 +1010,6 @@ function AddJobModal({
 }
 
 export default function Dashboard() {
-  const navigate = useNavigate();
   const [resumes, setResumes] = useState<Resume[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [selectedResumeId, setSelectedResumeId] = useState<number | null>(null);
@@ -1051,7 +1022,7 @@ export default function Dashboard() {
   const { token } = useAuthStore();
   const [viewResume, setViewResume] = useState<Resume | null>(null);
   const [viewJob, setViewJob] = useState<Job | null>(null);
-  const [viewLoading, setViewLoading] = useState(false);
+  const [, setViewLoading] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<TailorResult | null>(
     null,
   );
@@ -1394,10 +1365,12 @@ export default function Dashboard() {
                     onClick={async (e) => {
                       e.stopPropagation();
                       try {
-                        await deleteResume(r.id, token);
-                        setResumes((p) => p.filter((x) => x.id !== r.id));
-                        if (selectedResumeId === r.id)
-                          setSelectedResumeId(null);
+                        if (token) {
+                          await deleteResume(r.id, token);
+                          setResumes((p) => p.filter((x) => x.id !== r.id));
+                          if (selectedResumeId === r.id)
+                            setSelectedResumeId(null);
+                        }
                       } catch {
                         // optionally show error
                       }
@@ -1558,9 +1531,11 @@ export default function Dashboard() {
                     onClick={async (e) => {
                       e.stopPropagation();
                       try {
-                        await deleteJob(j.id, token);
-                        setJobs((p) => p.filter((x) => x.id !== j.id));
-                        if (selectedJobId === j.id) setSelectedJobId(null);
+                        if (token) {
+                          await deleteJob(j.id, token);
+                          setJobs((p) => p.filter((x) => x.id !== j.id));
+                          if (selectedJobId === j.id) setSelectedJobId(null);
+                        }
                       } catch {
                         // optionally show error
                       }
