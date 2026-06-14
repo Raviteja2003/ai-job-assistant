@@ -11,6 +11,7 @@ export const getJob = async (id: number): Promise<Job> => {
   return res.data;
 };
 
+
 export const addJob = async (
   company: string,
   role: string,
@@ -19,7 +20,7 @@ export const addJob = async (
   const res = await api.post("/job/add", {
     company,
     role,
-    description,
+    raw_text: description,  
   });
   return res.data;
 };
