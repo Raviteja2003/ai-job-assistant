@@ -9,7 +9,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import AppLayout from "./components/AppLayout";
 import InterviewPrep from "./pages/InterviewPrep";
 import EmailGenerator from "./pages/EmailGenerator";
-import Analytics from "./pages/Analytics";
+//import Analytics from "./pages/Analytics";
 import MockInterview from "./pages/MockInterview";
 import ResumeVersions from "./pages/ResumeVersions";
 export default function App() {
@@ -65,14 +65,14 @@ export default function App() {
             </AppLayout>
           }
         />
-        <Route
+        {/* <Route
           path="/analytics"
           element={
             <AppLayout>
               <Analytics />
             </AppLayout>
           }
-        />
+        /> */}
         <Route
           path="/mock-interview"
           element={
