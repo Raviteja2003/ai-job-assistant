@@ -102,7 +102,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
 
   const handleLogout = () => {
     logout();
-    navigate("/login");
+    navigate("/");
   };
 
   const handleNavClick = (path: string) => {

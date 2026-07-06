@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   FileText,
   Mail,
@@ -163,36 +164,38 @@ const RING_CIRCUMFERENCE = 163.28; // 2 * PI * r(26)
 function PrimaryButton({
   children,
   className = "",
+  to = "/",
 }: {
   children: React.ReactNode;
   className?: string;
+  to?: string;
 }) {
   return (
-    <a
-      href="#"
+    <Link
+      to={to}
       className={`inline-flex items-center justify-center gap-2 rounded-[11px] bg-[#375dfb] px-5 py-[11px] text-sm font-semibold text-white shadow-[0_8px_18px_-8px_rgba(55,93,251,0.65)] transition-all hover:-translate-y-px hover:bg-[#2947d1] ${className}`}
     >
       {children}
-    </a>
+    </Link>
   );
 }
 
 function GhostButton({
   children,
-  href = "#",
+  to = "/",
   className = "",
 }: {
   children: React.ReactNode;
-  href?: string;
+  to?: string;
   className?: string;
 }) {
   return (
-    <a
-      href={href}
+    <Link
+      to={to}
       className={`inline-flex items-center justify-center gap-2 rounded-[11px] border border-[#e6e8ec] px-5 py-[11px] text-sm font-semibold text-[#14161c] transition-colors hover:border-[#c7cbd4] hover:bg-white ${className}`}
     >
       {children}
-    </a>
+    </Link>
   );
 }
 
@@ -389,8 +392,12 @@ export default function LandingPage() {
             </a>
           </div>
           <div className="flex items-center gap-3.5">
-            <GhostButton className="px-3.5 py-2 text-[13px]">Sign in</GhostButton>
-            <PrimaryButton className="px-3.5 py-2 text-[13px]">Get started</PrimaryButton>
+            <GhostButton to="/login" className="px-3.5 py-2 text-[13px]">
+              Sign in
+            </GhostButton>
+            <PrimaryButton to="/register" className="px-3.5 py-2 text-[13px]">
+              Get started
+            </PrimaryButton>
           </div>
         </div>
       </nav>
@@ -412,12 +419,10 @@ export default function LandingPage() {
               letter, and interview questions pulled from your own experience.
             </p>
             <div className="mt-8 mb-9 flex flex-wrap items-center gap-3.5">
-              <PrimaryButton>Upload your resume</PrimaryButton>
-              <GhostButton href="#how">See how it works</GhostButton>
-            </div>
-            <div className="flex items-center gap-2 text-[13px] text-[#9aa0ab]">
-              <ShieldCheck size={14} className="text-[#9aa0ab]" />
-              Your resume stays yours — parsed into your own dashboard, never shared.
+              <div className="flex items-center gap-2 text-[13px] text-[#9aa0ab]">
+                <ShieldCheck size={14} className="text-[#9aa0ab]" />
+                Your resume stays yours — parsed into your own dashboard, never shared.
+              </div>
             </div>
           </div>
 
@@ -537,67 +542,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* FINAL CTA */}
-      <section className="px-4 pb-16 sm:px-8">
-        <div className="relative mx-auto max-w-[1180px] overflow-hidden rounded-[28px] bg-[#14161c] px-6 py-16 text-center sm:px-12">
-          <div
-            className="pointer-events-none absolute inset-0"
-            style={{
-              background:
-                "radial-gradient(600px 260px at 50% -20%, rgba(55,93,251,0.5), transparent 70%)",
-            }}
-          />
-          <h2 className="relative font-[Space_Grotesk,sans-serif] text-[26px] font-bold text-white sm:text-[38px]">
-            Stop rewriting your resume by hand.
-          </h2>
-          <p className="relative mx-auto mt-4 max-w-[460px] text-[15.5px] leading-relaxed text-[#b7bcc7]">
-            Upload it once, tailor it in seconds, and keep every application —
-            resume, cover letter, and interview prep — in one place.
-          </p>
-          <div className="relative mt-[30px] flex flex-wrap justify-center gap-3.5">
-            <a
-              href="#"
-              className="inline-flex items-center justify-center gap-2 rounded-[11px] bg-white px-5 py-[11px] text-sm font-semibold text-[#14161c] transition-all hover:-translate-y-px hover:bg-[#e9eaee]"
-            >
-              Get started free
-            </a>
-            <a
-              href="#features"
-              className="inline-flex items-center justify-center gap-2 rounded-[11px] border border-white/20 px-5 py-[11px] text-sm font-semibold text-white transition-colors hover:border-white/50 hover:bg-white/5"
-            >
-              Browse features
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* FOOTER */}
-      <footer className="pb-[60px]">
-        <div className="mx-auto max-w-[1180px] px-8">
-          <div className="flex flex-wrap items-center justify-between gap-4 border-t border-[#e6e8ec] pt-7">
-            <div className="flex items-center gap-2.5 text-sm font-bold">
-              <span className="flex h-6 w-6 items-center justify-center rounded-[9px] bg-gradient-to-br from-[#375dfb] to-[#2947d1]">
-                <CheckCircle2 size={13} className="text-white" strokeWidth={2.6} />
-              </span>
-              AI Job Assistant
-            </div>
-            <div className="flex gap-6">
-              <a href="#features" className="text-[13px] text-[#6b7280] hover:text-[#14161c]">
-                Features
-              </a>
-              <a href="#how" className="text-[13px] text-[#6b7280] hover:text-[#14161c]">
-                How it works
-              </a>
-              <a href="#stack" className="text-[13px] text-[#6b7280] hover:text-[#14161c]">
-                Stack
-              </a>
-            </div>
-            <span className="text-xs text-[#9aa0ab]">
-              MIT licensed · built for people who hate re-typing resumes
-            </span>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
