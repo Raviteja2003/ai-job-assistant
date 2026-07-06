@@ -12,10 +12,12 @@ import EmailGenerator from "./pages/EmailGenerator";
 //import Analytics from "./pages/Analytics";
 import MockInterview from "./pages/MockInterview";
 import ResumeVersions from "./pages/ResumeVersions";
+import LandingPage from "./pages/LandingPage";
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/" element={<LandingPage/> }   />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route
